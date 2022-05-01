@@ -1,0 +1,4 @@
+name: PulumiWebServer
+description: Pulumi configuration for my personal web server
+runtime:
+  name: dotnet

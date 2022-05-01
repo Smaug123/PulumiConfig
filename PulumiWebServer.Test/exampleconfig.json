@@ -1,0 +1,20 @@
+{
+  "name": "server",
+  "privateKey": "/path/to/.ssh/id_ed25519",
+  "acmeEmail": "my_acme_email@example.com",
+  "domain": "staging.example.com",
+  "remoteUsername": "my-username",
+  "giteaConfig": {
+    "serverPassword": "password-for-gitea-linux-user",
+    "adminPassword": "gitea-admin-user-app-password",
+    "adminUsername": "gitea-admin-username",
+    "adminEmailAddress": "gitea_email@example.com"
+  },
+  "radicaleConfig": {
+    "user": "app-username",
+    "password": "app-password",
+    "gitEmail": "radicale_email@example.com"
+  },
+  "cnames": {"www": "root"},
+  "subdomains": ["gitea", "calendar"]
+}
