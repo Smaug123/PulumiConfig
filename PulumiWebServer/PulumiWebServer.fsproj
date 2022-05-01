@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Pulumi" Version="3.31.0" />
+        <PackageReference Include="Pulumi.Cloudflare" Version="4.6.0" />
+        <PackageReference Include="Pulumi.Command" Version="0.1.0" />
+        <PackageReference Include="Pulumi.DigitalOcean" Version="4.12.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Include="Domain.fs" />
+      <Compile Include="Utils.fs" />
+      <Compile Include="Pulumi.fs" />
+      <Compile Include="Cloudflare.fs" />
+      <Compile Include="DigitalOcean.fs" />
+      <Compile Include="Server.fs" />
+      <Compile Include="Local.fs" />
+      <Compile Include="Program.fs" />
+      <EmbeddedResource Include="nginx.nix" />
+      <EmbeddedResource Include="userconfig.nix" />
+    </ItemGroup>
+    
+</Project>

@@ -1,0 +1,9 @@
+config:
+  cloudflare:apiToken:
+    secure: AAABANNbNWa4vdIYMss8vDD2AlrNpsjxo2FvEkX1YGdLMZ5hDpqm0eDQyyBYNK9BWmSloWz48O3A3hvo1gbB3+tOBThypg+j
+  digitalocean:spaces_access_id:
+    secure: AAABAAmpwB5lGwqfYdG7o/Kt9QXgiU8f+jyDSoqF49pIviKH8wm6zKrMyxYa0nIg5w1PuQ==
+  digitalocean:spaces_secret_key:
+    secure: AAABAP3IDlqavdOvXCiHZStkRpYlhxTJxNHx3QBt93diFtVzJM+piBLzDKU5fC7o/IbmfAKNR7qsVY9VT9MwNqZdHueNMiqvPy7a
+  digitalocean:token:
+    secure: AAABAM2mEcNQLXFD0pdXQdvfW5xcujT6HstoiNJUjVyyjFOGxqaOf3b6ud+PvCz1ZL+jkLWIlsCaBtCVLvx7yHbOJEiMfaw7gWAPTI8gIFRiUG5OFNPtm3RTmuDL4W8DqDvDQS1HNA==
