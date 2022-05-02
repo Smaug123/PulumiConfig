@@ -24,6 +24,8 @@
             pkgs.pulumi-bin
             pkgs.nixops
             pkgs.dotnet-sdk_6
+            pkgs.python
+            pkgs.git
             alejandra.defaultPackage.${system}
           ];
           shellHook = ''
