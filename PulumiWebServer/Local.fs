@@ -5,7 +5,7 @@ open System.Diagnostics
 [<RequireQualifiedAccess>]
 module Local =
     let forgetKey (address : Address) : unit =
-        let address = address.Get()
+        let address = address.Get ()
         let psi = ProcessStartInfo "/usr/bin/ssh-keygen"
         psi.Arguments <- $"-R {address}"
         psi.RedirectStandardError <- true

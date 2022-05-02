@@ -3,11 +3,14 @@
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    alejandra.url = "github:kamadorueda/alejandra/1.2.0";
+    alejandra.inputs.nixpkgs.follows = "nixpkgs";
   };
   outputs = {
     self,
     nixpkgs,
     flake-utils,
+    alejandra,
     ...
   }:
     flake-utils.lib.eachDefaultSystem (
@@ -21,6 +24,7 @@
             pkgs.pulumi-bin
             pkgs.nixops
             pkgs.dotnet-sdk_6
+            alejandra.defaultPackage.${system}
           ];
           shellHook = ''
             export PULUMI_SKIP_UPDATE_CHECK=1
