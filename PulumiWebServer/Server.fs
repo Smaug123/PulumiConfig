@@ -57,7 +57,7 @@ module Server =
         // must invoke it without "establishing intimate communication" with it.
         // https://www.gnu.org/licenses/gpl-faq.html#GPLPlugins
         args.Create <-
-            "curl https://raw.githubusercontent.com/elitak/nixos-infect/90dbc4b073db966e3614b8f679a78e98e1d04e59/nixos-infect | NO_REBOOT=1 PROVIDER=digitalocean NIX_CHANNEL=nixos-21.11 bash 2>&1 | tee /tmp/infect.log"
+            "curl https://raw.githubusercontent.com/elitak/nixos-infect/90dbc4b073db966e3614b8f679a78e98e1d04e59/nixos-infect | NO_REBOOT=1 PROVIDER=digitalocean NIX_CHANNEL=nixos-21.11 bash 2>&1 | tee /tmp/infect.log && ls /etc/NIXOS_LUSTRATE"
 
         Command ("nix-infect", args)
 
