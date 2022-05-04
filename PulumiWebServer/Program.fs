@@ -11,14 +11,27 @@ module Program =
         Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile, ".ssh", "id_ed25519")
 
     let ACME_EMAIL =
-        failwith "enter an ACME email address here"
+        "patrick+acme@patrickstevens.co.uk"
         |> EmailAddress
 
-    let DOMAIN = failwith "enter your domain here" |> DomainName
+    let DOMAIN = "patrickstevens.co.uk" |> DomainName
 
-    let SUBDOMAIN = "staging"
+    let SUBDOMAINS =
+        [
+            "staging"
+            "www.staging"
+            "gitea.staging"
+        ]
 
-    let REMOTE_USERNAME = failwith "enter your username here" |> Username
+    let REMOTE_USERNAME = "patrick" |> Username
+
+    let nginxConfig =
+        {
+            Domain = DOMAIN
+            WebSubdomain = "www.staging"
+            GiteaSubdomain = "gitea.staging"
+            AcmeEmail = ACME_EMAIL
+        }
 
     [<EntryPoint>]
     let main argv =
@@ -49,41 +62,42 @@ module Program =
                         }
 
                     let! zone = Cloudflare.getZone DOMAIN
-                    let dns = Cloudflare.addDns SUBDOMAIN zone address
+                    let dns = Cloudflare.addDns SUBDOMAINS zone address
                     let! _ = Server.waitForReady privateKey address
 
                     let infectNix = Server.infectNix privateKey address
                     let! _ = infectNix.Stdout
 
-                    let nginxConfig, tmpFile =
-                        Server.writeNginxConfig infectNix.Stdout SUBDOMAIN DOMAIN ACME_EMAIL privateKey address
+                    let nginxConfigFile, tmpFile =
+                        Server.writeNginxConfig infectNix.Stdout nginxConfig privateKey address
 
                     toTidyUp.Add tmpFile
 
-                    let userConfig, tmpFile2 =
+                    let userConfigFile, tmpFile2 =
                         Server.writeUserConfig infectNix.Stdout keys REMOTE_USERNAME privateKey address
 
                     toTidyUp.Add tmpFile2
 
-                    let giteaConfig, tmpFile3 =
-                        Server.writeGiteaConfig infectNix.Stdout DOMAIN privateKey address
+                    let giteaConfigFile, tmpFile3 =
+                        Server.writeGiteaConfig
+                            infectNix.Stdout
+                            nginxConfig.GiteaSubdomain
+                            nginxConfig.Domain
+                            privateKey
+                            address
+
                     toTidyUp.Add tmpFile3
 
                     // Wait for the config files to be written
-                    let! _ = nginxConfig.Urn
-                    let! _ = giteaConfig.Urn
-                    let! _ = userConfig.Urn
+                    let! _ = nginxConfigFile.Urn
+                    let! _ = giteaConfigFile.Urn
+                    let! _ = userConfigFile.Urn
 
-                    let configureNginx = Server.loadNginxConfig nginxConfig.Urn privateKey address
+                    let configureNginx = Server.loadNginxConfig nginxConfigFile.Urn privateKey address
                     let configureGitea = Server.loadGiteaConfig configureNginx.Urn privateKey address
 
                     let configureUsers =
-                        Server.loadUserConfig
-                            [
-                                OutputCrate.make configureGitea.Urn
-                            ]
-                            privateKey
-                            address
+                        Server.loadUserConfig [ OutputCrate.make configureGitea.Urn ] privateKey address
 
                     let firstReboot =
                         Server.reboot "post-infect" configureUsers.Stdout privateKey address
@@ -94,14 +108,14 @@ module Program =
                     let! _ = Server.waitForReady privateKey address
 
                     let deps =
-                        [
-                            Some (OutputCrate.make firstReboot.Stdout)
-                            fst dns
-                            |> Option.map (fun record -> record.Urn |> OutputCrate.make)
-                            snd dns
-                            |> Option.map (fun record -> record.Urn |> OutputCrate.make)
-                        ]
-                        |> List.choose id
+                        let dnsDeps =
+                            dns
+                            |> Map.toList
+                            |> List.collect (fun (_, record) -> [ record.IPv4 ; record.IPv6 ])
+                            |> List.choose id
+                            |> List.map (fun record -> record.Urn |> OutputCrate.make)
+
+                        OutputCrate.make firstReboot.Stdout :: dnsDeps
 
                     let rebuild = Server.nixRebuild deps privateKey address
                     let! _ = rebuild.Stdout

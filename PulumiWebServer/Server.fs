@@ -60,19 +60,12 @@ module Server =
 
     let writeNginxConfig
         (trigger : Output<'a>)
-        (subdomain : string)
-        (DomainName domain)
-        (EmailAddress acmeEmail)
+        (nginxConfig : NginxConfig)
         (PrivateKey privateKey)
         (address : Address)
         : CopyFile * FileInfo
         =
-        let nginx =
-            Utils.getEmbeddedResource "nginx.nix"
-            |> fun s ->
-                s
-                    .Replace("@@DOMAIN@@", $"{subdomain}.{domain}")
-                    .Replace ("@@ACME_EMAIL", acmeEmail)
+        let nginx = Nginx.createNixConfig nginxConfig
 
         let tmpPath = Path.GetTempFileName () |> FileInfo
         File.WriteAllText (tmpPath.FullName, nginx)
@@ -127,6 +120,7 @@ module Server =
 
     let writeGiteaConfig
         (trigger : Output<'a>)
+        (subdomain : string)
         (DomainName domain)
         (PrivateKey privateKey)
         (address : Address)
@@ -134,7 +128,8 @@ module Server =
         =
         let userConfig =
             Utils.getEmbeddedResource "gitea.nix"
-            |> fun s -> s.Replace("@@DOMAIN@@", domain)
+            |> fun s -> s.Replace ("@@DOMAIN@@", domain)
+            |> fun s -> s.Replace ("@@GITEA_SUBDOMAIN@@", subdomain)
 
         let tmpPath = Path.GetTempFileName () |> FileInfo
         File.WriteAllText (tmpPath.FullName, userConfig)

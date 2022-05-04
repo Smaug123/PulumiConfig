@@ -2,13 +2,8 @@
   domain = "@@DOMAIN@@";
 in {
   security.acme.acceptTerms = true;
-  security.acme.certs = {
-    ${domain} = {
-      email = "@@ACME_EMAIL@@";
-      # Staging
-      server = "https://acme-staging-v02.api.letsencrypt.org/directory";
-    };
-  };
+  security.acme.email = "@@ACME_EMAIL@@";
+  security.acme.certs = "@@DOMAINS@@";
 
   networking.firewall.allowedTCPPorts = [
     80 # required for the ACME challenge
@@ -20,13 +15,20 @@ in {
     recommendedTlsSettings = true;
     recommendedOptimisation = true;
     recommendedGzipSettings = true;
+
     virtualHosts."${domain}" = {
       addSSL = true;
       enableACME = true;
       root = "/var/www/html";
     };
 
-    virtualHosts."gitea.${domain}" = {
+    virtualHosts."@@WEBROOT_SUBDOMAIN@@.${domain}" = {
+      addSSL = true;
+      enableACME = true;
+      root = "/var/www/html";
+    };
+
+    virtualHosts."@@GITEA_SUBDOMAIN@@.${domain}" = {
       addSSL = true;
       enableACME = true;
       locations."/".proxyPass = "http://localhost:3001/";
