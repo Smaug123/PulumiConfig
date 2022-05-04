@@ -11,9 +11,19 @@ type Username = Username of string
 
 type SshFingerprint = SshFingerprint of string
 
-type EmailAddress = EmailAddress of string
+type EmailAddress =
+    | EmailAddress of string
 
-type DomainName = DomainName of string
+    override this.ToString () =
+        match this with
+        | EmailAddress s -> s
+
+type DomainName =
+    | DomainName of string
+
+    override this.ToString () =
+        match this with
+        | DomainName s -> s
 
 type Address =
     {
