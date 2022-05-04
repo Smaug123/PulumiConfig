@@ -125,6 +125,32 @@ module Server =
         args.Connection <- Input.lift (connection privateKey address)
         CopyFile ("write-user-config", args), tmpPath
 
+    let writeGiteaConfig
+        (trigger : Output<'a>)
+        (DomainName domain)
+        (PrivateKey privateKey)
+        (address : Address)
+        : CopyFile * FileInfo
+        =
+        let userConfig =
+            Utils.getEmbeddedResource "gitea.nix"
+            |> fun s -> s.Replace("@@DOMAIN@@", domain)
+
+        let tmpPath = Path.GetTempFileName () |> FileInfo
+        File.WriteAllText (tmpPath.FullName, userConfig)
+        let args = CopyFileArgs ()
+
+        args.Triggers <-
+            InputList.ofOutput<obj> (
+                trigger
+                |> Output.map (unbox<obj> >> Seq.singleton)
+            )
+
+        args.LocalPath <- Input.lift tmpPath.FullName
+        args.RemotePath <- Input.lift "/etc/nixos/gitea.nix"
+        args.Connection <- Input.lift (connection privateKey address)
+        CopyFile ("write-gitea-config", args), tmpPath
+
     let loadUserConfig (onChange : OutputCrate list) (PrivateKey privateKey) (address : Address) =
         let args = CommandArgs ()
 
@@ -143,6 +169,24 @@ module Server =
 
         args.Delete <- """sed -i '/userconfig.nix/d' /etc/nixos/configuration.nix"""
         Command ("configure-users", args)
+
+    let loadGiteaConfig<'a> (onChange : Output<'a>) (PrivateKey privateKey) (address : Address) =
+        let args = CommandArgs ()
+
+        args.Triggers <-
+            onChange
+            |> Output.map (unbox<obj> >> Seq.singleton)
+            |> InputList.ofOutput
+
+        args.Connection <- Input.lift (connection privateKey address)
+
+        args.Create <-
+            """sed -i '4i\
+    ./gitea.nix\
+' /etc/nixos/configuration.nix"""
+
+        args.Delete <- """sed -i '/gitea.nix/d' /etc/nixos/configuration.nix"""
+        Command ("configure-gitea", args)
 
     let loadNginxConfig (onChange : Output<'a>) (PrivateKey privateKey) (address : Address) =
         let args = CommandArgs ()

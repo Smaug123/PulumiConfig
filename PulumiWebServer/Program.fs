@@ -64,16 +64,23 @@ module Program =
                         Server.writeUserConfig infectNix.Stdout keys REMOTE_USERNAME privateKey address
 
                     toTidyUp.Add tmpFile2
+
+                    let giteaConfig, tmpFile3 =
+                        Server.writeGiteaConfig infectNix.Stdout DOMAIN privateKey address
+                    toTidyUp.Add tmpFile3
+
+                    // Wait for the config files to be written
                     let! _ = nginxConfig.Urn
-                    let configureNginx = Server.loadNginxConfig nginxConfig.Urn privateKey address
-                    let! _ = configureNginx.Urn
+                    let! _ = giteaConfig.Urn
                     let! _ = userConfig.Urn
+
+                    let configureNginx = Server.loadNginxConfig nginxConfig.Urn privateKey address
+                    let configureGitea = Server.loadGiteaConfig configureNginx.Urn privateKey address
 
                     let configureUsers =
                         Server.loadUserConfig
                             [
-                                OutputCrate.make userConfig.Urn
-                                OutputCrate.make configureNginx.Urn
+                                OutputCrate.make configureGitea.Urn
                             ]
                             privateKey
                             address

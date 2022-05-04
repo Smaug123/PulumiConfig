@@ -5,6 +5,8 @@ in {
   security.acme.certs = {
     ${domain} = {
       email = "@@ACME_EMAIL@@";
+      # Staging
+      server = "https://acme-staging-v02.api.letsencrypt.org/directory";
     };
   };
 
@@ -22,6 +24,12 @@ in {
       addSSL = true;
       enableACME = true;
       root = "/var/www/html";
+    };
+
+    virtualHosts."gitea.${domain}" = {
+      addSSL = true;
+      enableACME = true;
+      locations."/".proxyPass = "http://localhost:3001/";
     };
   };
 }

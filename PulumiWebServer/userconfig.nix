@@ -1,4 +1,5 @@
 {...}: {
+  users.mutableUsers = false;
   users.users."@@USER@@" = {
     isNormalUser = true;
     home = "/home/@@USER@@";
