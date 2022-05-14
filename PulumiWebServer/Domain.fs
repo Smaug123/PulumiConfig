@@ -11,12 +11,23 @@ type Username = Username of string
 
 type SshFingerprint = SshFingerprint of string
 
+type SshKey =
+    {
+        PublicKeyContents : string
+        Fingerprint : SshFingerprint
+    }
+
 type EmailAddress =
     | EmailAddress of string
 
     override this.ToString () =
         match this with
         | EmailAddress s -> s
+
+[<RequireQualifiedAccess>]
+module SshKey =
+    let fingerprint (key : SshKey) = key.Fingerprint
+
 
 type DomainName =
     | DomainName of string

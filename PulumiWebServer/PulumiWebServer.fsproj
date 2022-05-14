@@ -18,11 +18,13 @@
       <Compile Include="Pulumi.fs" />
       <Compile Include="Cloudflare.fs" />
       <Compile Include="DigitalOcean.fs" />
+      <Compile Include="Nginx.fs" />
       <Compile Include="Server.fs" />
       <Compile Include="Local.fs" />
       <Compile Include="Program.fs" />
       <EmbeddedResource Include="nginx.nix" />
       <EmbeddedResource Include="userconfig.nix" />
+      <EmbeddedResource Include="gitea.nix" />
     </ItemGroup>
     
 </Project>
