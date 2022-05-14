@@ -9,6 +9,17 @@
 
   security.sudo = {
     enable = true;
+    extraRules = [
+      {
+        users = ["@@USER@@"];
+        commands = [
+          {
+            command = "ALL";
+            options = ["NOPASSWD"];
+          }
+        ];
+      }
+    ];
   };
 
   environment.systemPackages = [

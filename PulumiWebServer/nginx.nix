@@ -27,11 +27,5 @@ in {
       enableACME = true;
       root = "/var/www/html";
     };
-
-    virtualHosts."@@GITEA_SUBDOMAIN@@.${domain}" = {
-      addSSL = true;
-      enableACME = true;
-      locations."/".proxyPass = "http://localhost:3001/";
-    };
   };
 }

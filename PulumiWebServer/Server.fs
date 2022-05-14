@@ -85,7 +85,7 @@ module Server =
 
     let writeUserConfig
         (trigger : Output<'a>)
-        (keys : SshFingerprint seq)
+        (keys : SshKey seq)
         (Username username)
         (PrivateKey privateKey)
         (address : Address)
@@ -98,7 +98,7 @@ module Server =
                     .Replace(
                         "@@AUTHORIZED_KEYS@@",
                         keys
-                        |> Seq.map (fun (SshFingerprint r) -> r)
+                        |> Seq.map (fun key -> key.PublicKeyContents)
                         |> String.concat "\" \""
                     )
                     .Replace ("@@USER@@", username)

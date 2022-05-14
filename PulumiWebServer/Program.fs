@@ -10,26 +10,18 @@ module Program =
     let PRIVATE_KEY =
         Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile, ".ssh", "id_ed25519")
 
-    let ACME_EMAIL =
-        "patrick+acme@patrickstevens.co.uk"
-        |> EmailAddress
+    let ACME_EMAIL = failwith "email address" |> EmailAddress
 
-    let DOMAIN = "patrickstevens.co.uk" |> DomainName
+    let DOMAIN = failwith "domain" |> DomainName
 
-    let SUBDOMAINS =
-        [
-            "staging"
-            "www.staging"
-            "gitea.staging"
-        ]
+    let SUBDOMAINS = [ "www" ]
 
-    let REMOTE_USERNAME = "patrick" |> Username
+    let REMOTE_USERNAME = failwith "username" |> Username
 
     let nginxConfig =
         {
             Domain = DOMAIN
-            WebSubdomain = "www.staging"
-            GiteaSubdomain = "gitea.staging"
+            WebSubdomain = "www"
             AcmeEmail = ACME_EMAIL
         }
 
@@ -47,11 +39,21 @@ module Program =
                     let! keys =
                         DigitalOcean.storedSshKeys key.Urn
                         |> Output.map (
-                            Seq.map (fun s -> SshFingerprint s.Fingerprint)
+                            Seq.map (fun s ->
+                                {
+                                    Fingerprint = SshFingerprint s.Fingerprint
+                                    PublicKeyContents = s.PublicKey
+                                }
+                            )
                             >> Array.ofSeq
                         )
 
-                    let! droplet = DigitalOcean.makeNixosServer (keys |> Array.map Input.lift) Region.LON1
+                    let! droplet =
+                        DigitalOcean.makeNixosServer
+                            (keys
+                             |> Array.map (SshKey.fingerprint >> Input.lift))
+                            Region.LON1
+
                     let! ipv4 = droplet.Ipv4Address
                     let! ipv6 = droplet.Ipv6Address
 
@@ -62,7 +64,7 @@ module Program =
                         }
 
                     let! zone = Cloudflare.getZone DOMAIN
-                    let dns = Cloudflare.addDns SUBDOMAINS zone address
+                    let dns = Cloudflare.addDns DOMAIN SUBDOMAINS zone address
                     let! _ = Server.waitForReady privateKey address
 
                     let infectNix = Server.infectNix privateKey address
@@ -78,26 +80,14 @@ module Program =
 
                     toTidyUp.Add tmpFile2
 
-                    let giteaConfigFile, tmpFile3 =
-                        Server.writeGiteaConfig
-                            infectNix.Stdout
-                            nginxConfig.GiteaSubdomain
-                            nginxConfig.Domain
-                            privateKey
-                            address
-
-                    toTidyUp.Add tmpFile3
-
                     // Wait for the config files to be written
                     let! _ = nginxConfigFile.Urn
-                    let! _ = giteaConfigFile.Urn
                     let! _ = userConfigFile.Urn
 
                     let configureNginx = Server.loadNginxConfig nginxConfigFile.Urn privateKey address
-                    let configureGitea = Server.loadGiteaConfig configureNginx.Urn privateKey address
 
                     let configureUsers =
-                        Server.loadUserConfig [ OutputCrate.make configureGitea.Urn ] privateKey address
+                        Server.loadUserConfig [ OutputCrate.make configureNginx.Urn ] privateKey address
 
                     let firstReboot =
                         Server.reboot "post-infect" configureUsers.Stdout privateKey address
@@ -111,7 +101,11 @@ module Program =
                         let dnsDeps =
                             dns
                             |> Map.toList
-                            |> List.collect (fun (_, record) -> [ record.IPv4 ; record.IPv6 ])
+                            |> List.collect (fun (_, record) ->
+                                match record with
+                                | DnsRecord.ARecord record -> [ record.IPv4 ; record.IPv6 ]
+                                | DnsRecord.Cname _ -> []
+                            )
                             |> List.choose id
                             |> List.map (fun record -> record.Urn |> OutputCrate.make)
 

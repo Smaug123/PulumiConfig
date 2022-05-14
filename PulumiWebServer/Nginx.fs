@@ -4,19 +4,13 @@ type NginxConfig =
     {
         Domain : DomainName
         WebSubdomain : string
-        GiteaSubdomain : string
         AcmeEmail : EmailAddress
     }
 
     member this.Domains =
-        [
-            this.WebSubdomain
-            this.GiteaSubdomain
-        ]
+        [ this.WebSubdomain ]
         |> List.map (fun subdomain -> $"%s{subdomain}.{this.Domain}")
-        |> fun subdomains ->
-            // TODO(staging): remove the staging
-            sprintf "staging.%O" this.Domain :: subdomains
+        |> fun subdomains -> this.Domain.ToString () :: subdomains
 
 [<RequireQualifiedAccess>]
 module Nginx =
@@ -32,16 +26,9 @@ module Nginx =
             Utils.getEmbeddedResource "nginx.nix"
             |> fun s ->
                 s
-                    // TODO(staging): remove the staging
-                    .Replace("@@DOMAIN@@", "staging." + config.Domain.ToString ())
-                    // TODO(staging): remove the staging
-                    .Replace(
-                        "@@WEBROOT_SUBDOMAIN@@",
-                        config.WebSubdomain
-                    )
-                    .Replace("@@GITEA_SUBDOMAIN@@", config.GiteaSubdomain)
-                    .Replace("@@ACME_EMAIL@@", config.AcmeEmail.ToString ())
-                    .Replace ("staging.staging", "staging")
+                    .Replace("@@DOMAIN@@", config.Domain.ToString ())
+                    .Replace("@@WEBROOT_SUBDOMAIN@@", config.WebSubdomain)
+                    .Replace ("@@ACME_EMAIL@@", config.AcmeEmail.ToString ())
 
         let certConfig =
             config.Domains
@@ -49,7 +36,7 @@ module Nginx =
                 [
                     $"\"{domain}\" ="
                     "{"
-                    "  server = \"https://acme-staging-v02.api.letsencrypt.org/directory\";"
+                    "  server = \"https://acme-v02.api.letsencrypt.org/directory\";"
                     "};"
                 ]
                 |> String.concat "\n"

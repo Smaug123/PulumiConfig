@@ -11,6 +11,16 @@ type Username = Username of string
 
 type SshFingerprint = SshFingerprint of string
 
+type SshKey =
+    {
+        PublicKeyContents : string
+        Fingerprint : SshFingerprint
+    }
+
+[<RequireQualifiedAccess>]
+module SshKey =
+    let fingerprint (key : SshKey) = key.Fingerprint
+
 type EmailAddress =
     | EmailAddress of string
 
