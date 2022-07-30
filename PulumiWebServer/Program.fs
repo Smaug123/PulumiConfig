@@ -37,8 +37,12 @@ module Program =
 
     let NEXTCLOUD_CONFIG =
         {
-            ServerPassword = failwith "password for nextcloud user on machine" |> BashString.make
-            AdminPassword = failwith "password for admin user within nextcloud" |> BashString.make
+            ServerPassword =
+                failwith "password for nextcloud user on machine"
+                |> BashString.make
+            AdminPassword =
+                failwith "password for admin user within nextcloud"
+                |> BashString.make
         }
 
     [<EntryPoint>]
