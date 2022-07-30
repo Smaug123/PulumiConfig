@@ -19,8 +19,13 @@ module Server =
 
         inputArgs.Port <- Input.lift 22
         inputArgs.User <- Input.lift "root"
-        inputArgs.PrivateKey <- Input.lift (File.ReadAllText privateKey.FullName)
-        inputArgs
+
+        inputArgs.PrivateKey <-
+            File.ReadAllText privateKey.FullName
+            |> Output.CreateSecret
+            |> Input.ofOutput
+
+        inputArgs |> Output.CreateSecret |> Input.ofOutput
 
     let rec waitForReady (PrivateKey privateKey as pk) (address : Address) : Output<unit> =
         output {
@@ -51,7 +56,7 @@ module Server =
 
     let infectNix (PrivateKey privateKey) (address : Address) =
         let args = CommandArgs ()
-        args.Connection <- Input.lift (connection privateKey address)
+        args.Connection <- connection privateKey address
 
         // IMPORTANT NOTE: do not inline this script. It is licensed under the GPL, so we
         // must invoke it without "establishing intimate communication" with it.
@@ -60,6 +65,9 @@ module Server =
             "curl https://raw.githubusercontent.com/elitak/nixos-infect/90dbc4b073db966e3614b8f679a78e98e1d04e59/nixos-infect | NO_REBOOT=1 PROVIDER=digitalocean NIX_CHANNEL=nixos-21.11 bash 2>&1 | tee /tmp/infect.log && ls /etc/NIXOS_LUSTRATE"
 
         Command ("nix-infect", args)
+
+    let deleteBeforeReplace =
+        CustomResourceOptions (DeleteBeforeReplace = Nullable true)
 
     let contentAddressedCopy
         (PrivateKey privateKey)
@@ -71,13 +79,14 @@ module Server =
         : Command
         =
         let args = CommandArgs ()
-        args.Connection <- Input.lift (connection privateKey address)
+        args.Connection <- connection privateKey address
 
         args.Triggers <-
             trigger
             |> Output.map (unbox<obj> >> Seq.singleton)
             |> InputList.ofOutput
 
+        // TODO - do this by passing into stdin instead
         if targetPath.Contains '\''
            || targetPath.Contains '\n' then
             failwith $"Can't copy a file to a location with a quote mark in, got: {targetPath}"
@@ -89,16 +98,19 @@ module Server =
 
         let commandString =
             [
+                "{"
                 $"cat <<{delimiter}"
                 fileContents
-                "EOF"
+                delimiter
+                "} > '{targetPath}'"
             ]
             |> String.concat "\n"
+            |> Output.CreateSecret
 
         args.Create <- commandString
-        args.Delete <- $"rm '{targetPath}'"
+        args.Delete <- $"rm -f '{targetPath}'"
 
-        Command (name, args)
+        Command (name, args, deleteBeforeReplace)
 
     let writeNginxConfig
         (trigger : Output<'a>)
@@ -177,15 +189,15 @@ module Server =
             |> Output.map List.toSeq
             |> InputList.ofOutput
 
-        args.Connection <- Input.lift (connection privateKey address)
+        args.Connection <- connection privateKey address
 
         args.Create <-
             """sed -i '4i\
     ./userconfig.nix\
 ' /etc/nixos/configuration.nix"""
 
-        args.Delete <- """sed -i '/userconfig.nix/d' /etc/nixos/configuration.nix"""
-        Command ("configure-users", args)
+        args.Delete <- """sed -i -n '/userconfig.nix/!p' /etc/nixos/configuration.nix"""
+        Command ("configure-users", args, deleteBeforeReplace)
 
     let loadGiteaConfig<'a> (onChange : Output<'a>) (PrivateKey privateKey) (address : Address) =
         let args = CommandArgs ()
@@ -195,15 +207,15 @@ module Server =
             |> Output.map (unbox<obj> >> Seq.singleton)
             |> InputList.ofOutput
 
-        args.Connection <- Input.lift (connection privateKey address)
+        args.Connection <- connection privateKey address
 
         args.Create <-
             """sed -i '4i\
     ./gitea.nix\
 ' /etc/nixos/configuration.nix"""
 
-        args.Delete <- """sed -i '/gitea.nix/d' /etc/nixos/configuration.nix"""
-        Command ("configure-gitea", args)
+        args.Delete <- """sed -i -n '/gitea.nix/!p' /etc/nixos/configuration.nix"""
+        Command ("configure-gitea", args, deleteBeforeReplace)
 
     let loadNginxConfig (onChange : Output<'a>) (PrivateKey privateKey) (address : Address) =
         let args = CommandArgs ()
@@ -214,15 +226,15 @@ module Server =
                 |> Output.map (unbox<obj> >> Seq.singleton)
             )
 
-        args.Connection <- Input.lift (connection privateKey address)
+        args.Connection <- connection privateKey address
 
         args.Create <-
             """sed -i '4i\
     ./nginx.nix\
 ' /etc/nixos/configuration.nix"""
 
-        args.Delete <- """sed -i '/nginx.nix/d' /etc/nixos/configuration.nix"""
-        Command ("configure-nginx", args)
+        args.Delete <- """sed -i -n '/nginx.nix/!p' /etc/nixos/configuration.nix"""
+        Command ("configure-nginx", args, deleteBeforeReplace)
 
     let loadNextCloudConfig
         (onChange : Output<'a>)
@@ -240,15 +252,14 @@ module Server =
                     |> Output.map (unbox<obj> >> Seq.singleton)
                 )
 
-            args.Connection <- Input.lift (connection privateKey address)
+            args.Connection <- connection privateKey address
 
             args.Create <-
                 """sed -i '4i\
-        ./nextcloud.nix\
-    ' /etc/nixos/configuration.nix"""
+        ./nextcloud.nix' /etc/nixos/configuration.nix"""
 
-            args.Delete <- """sed -i '/nextcloud.nix/d' /etc/nixos/configuration.nix"""
-            Command ("configure-nextcloud-nix", args)
+            args.Delete <- """sed -i -n '/nextcloud.nix/!p' /etc/nixos/configuration.nix"""
+            Command ("configure-nextcloud-nix", args, deleteBeforeReplace)
 
         let configureNextCloud =
             let args = CommandArgs ()
@@ -259,7 +270,7 @@ module Server =
                     |> Output.map (unbox<obj> >> Seq.singleton)
                 )
 
-            args.Connection <- Input.lift (connection privateKey address)
+            args.Connection <- connection privateKey address
 
             let argsString =
                 $"""OLD_UMASK=$(umask) && \
@@ -271,16 +282,16 @@ chown nextcloud /var/nextcloud-admin-pass && \
 umask "$OLD_UMASK"
 """
 
-            args.Create <- Input.lift argsString
+            args.Create <- Input.ofOutput (Output.CreateSecret argsString)
 
-            args.Delete <- """rm /var/nextcloud-db-pass && rm /var/nextcloud-admin-pass"""
-            Command ("configure-nextcloud", args)
+            args.Delete <- """rm -f /var/nextcloud-db-pass && rm -f /var/nextcloud-admin-pass"""
+            Command ("configure-nextcloud", args, deleteBeforeReplace)
 
         [ configureNix ; configureNextCloud ]
 
     let nixRebuild (onChange : OutputCrate list) (PrivateKey privateKey) (address : Address) =
         let args = CommandArgs ()
-        args.Connection <- Input.lift (connection privateKey address)
+        args.Connection <- connection privateKey address
         args.Create <- "/run/current-system/sw/bin/nixos-rebuild switch"
 
         args.Triggers <-
@@ -291,15 +302,15 @@ umask "$OLD_UMASK"
 
         Command ("nixos-rebuild", args)
 
-    let reboot (stage : string) (onChange : OutputCrate list) (PrivateKey privateKey) (address : Address) =
+    let reboot (stage : string) (onChange : Output<'a>) (PrivateKey privateKey) (address : Address) =
         let args = CommandArgs ()
-        args.Connection <- Input.lift (connection privateKey address)
+        args.Connection <- connection privateKey address
 
         args.Triggers <-
-            onChange
-            |> OutputCrate.sequence
-            |> Output.map List.toSeq
-            |> InputList.ofOutput<obj>
+            InputList.ofOutput<obj> (
+                onChange
+                |> Output.map (unbox<obj> >> Seq.singleton)
+            )
 
         args.Create <- "shutdown -r now"
         Command ($"reboot-{stage}", args)

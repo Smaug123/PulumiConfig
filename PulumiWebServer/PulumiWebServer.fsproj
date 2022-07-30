@@ -6,10 +6,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Pulumi" Version="3.31.0" />
-        <PackageReference Include="Pulumi.Cloudflare" Version="4.6.0" />
-        <PackageReference Include="Pulumi.Command" Version="0.1.0" />
-        <PackageReference Include="Pulumi.DigitalOcean" Version="4.12.0" />
+        <PackageReference Include="Pulumi" Version="3.37.2" />
+        <PackageReference Include="Pulumi.Cloudflare" Version="4.8.0" />
+        <PackageReference Include="Pulumi.Command" Version="0.4.1" />
+        <PackageReference Include="Pulumi.DigitalOcean" Version="4.14.0" />
     </ItemGroup>
 
     <ItemGroup>
