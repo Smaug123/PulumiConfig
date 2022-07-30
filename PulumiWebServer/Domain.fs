@@ -67,10 +67,12 @@ type Address =
 
 type WellKnownSubdomain =
     | Nextcloud
+    | Gitea
 
     override this.ToString () =
         match this with
         | Nextcloud -> "nextcloud"
+        | Gitea -> "gitea"
 
 type WellKnownCnameTarget =
     | Root
