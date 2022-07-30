@@ -110,10 +110,16 @@ module Program =
                     // Wait for the config files to be written
                     let! _ = configFiles
 
-                    let configureNginx = Server.loadNginxConfig nginxConfigFile.Stdout privateKey address
+                    let configureNginx =
+                        Server.loadNginxConfig nginxConfigFile.Stdout privateKey address
 
                     let configureUsers =
-                        Server.loadUserConfig [ OutputCrate.make configureNginx.Stdout ] privateKey address
+                        Server.loadUserConfig
+                            [
+                                OutputCrate.make configureNginx.Stdout
+                            ]
+                            privateKey
+                            address
 
                     let configureNextcloud =
                         Server.loadNextCloudConfig configureUsers.Stdout privateKey address NEXTCLOUD_CONFIG
@@ -124,12 +130,7 @@ module Program =
                         |> Output.sequence
 
                     // If this is a new node, reboot
-                    let firstReboot =
-                        Server.reboot
-                            "post-infect"
-                            droplet.Urn
-                            privateKey
-                            address
+                    let firstReboot = Server.reboot "post-infect" droplet.Urn privateKey address
 
                     let! _ = firstReboot.Stdout
                     // The nixos rebuild has blatted the known public key.
@@ -149,8 +150,7 @@ module Program =
                             |> List.map (fun record -> record.Urn |> OutputCrate.make)
 
                         OutputCrate.make (configFiles |> Output.map List.toArray)
-                        :: OutputCrate.make firstReboot.Stdout
-                        :: dnsDeps
+                        :: OutputCrate.make firstReboot.Stdout :: dnsDeps
 
                     let rebuild = Server.nixRebuild deps privateKey address
                     let! _ = rebuild.Stdout

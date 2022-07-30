@@ -19,13 +19,13 @@ module Server =
 
         inputArgs.Port <- Input.lift 22
         inputArgs.User <- Input.lift "root"
+
         inputArgs.PrivateKey <-
             File.ReadAllText privateKey.FullName
             |> Output.CreateSecret
             |> Input.ofOutput
-        inputArgs
-        |> Output.CreateSecret
-        |> Input.ofOutput
+
+        inputArgs |> Output.CreateSecret |> Input.ofOutput
 
     let rec waitForReady (PrivateKey privateKey as pk) (address : Address) : Output<unit> =
         output {
@@ -66,7 +66,8 @@ module Server =
 
         Command ("nix-infect", args)
 
-    let deleteBeforeReplace = CustomResourceOptions (DeleteBeforeReplace = Nullable true)
+    let deleteBeforeReplace =
+        CustomResourceOptions (DeleteBeforeReplace = Nullable true)
 
     let contentAddressedCopy
         (PrivateKey privateKey)
