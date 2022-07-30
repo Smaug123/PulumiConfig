@@ -12,8 +12,10 @@ module Server =
     let createSecretFile (args : CommandArgs) (username : string) (toWrite : BashString) (filePath : string) : unit =
         if filePath.Contains "'" then
             failwith $"filepath contained quote: {filePath}"
+
         if username.Contains "'" then
             failwith $"username contained quote: {username}"
+
         let argsString =
             $"""OLD_UMASK=$(umask) && \
 umask 077 && \
@@ -21,6 +23,7 @@ echo {toWrite} > '{filePath}' && \
 chown '{username}' '{filePath}' && \
 umask "$OLD_UMASK"
 """
+
         args.Create <- Input.ofOutput (Output.CreateSecret argsString)
         args.Delete <- $"rm -f '{filePath}'"
 
@@ -199,8 +202,10 @@ umask "$OLD_UMASK"
             nextCloudConfig
 
     let addToNixFileCommand (args : CommandArgs) (filename : string) : unit =
-        args.Create <- $"""sed -i '4i\
+        args.Create <-
+            $"""sed -i '4i\
     ./{filename}' /etc/nixos/configuration.nix"""
+
         args.Delete <- $"""sed -i -n '/{filename}/!p' /etc/nixos/configuration.nix"""
 
     let loadUserConfig (onChange : OutputCrate list) (PrivateKey privateKey) (address : Address) =
@@ -219,7 +224,10 @@ umask "$OLD_UMASK"
         Command ("configure-users", args, deleteBeforeReplace)
 
     let loadGiteaConfig<'a>
-        (onChange : Output<'a>) (PrivateKey privateKey) (address : Address) (config : GiteaConfig)
+        (onChange : Output<'a>)
+        (PrivateKey privateKey)
+        (address : Address)
+        (config : GiteaConfig)
         : Command list
         =
         let loadNix =
@@ -252,7 +260,11 @@ umask "$OLD_UMASK"
 
             Command ("write-gitea-password", args, deleteBeforeReplace)
 
-        [ loadNix ; writePassword ; writeGiteaUserPassword ]
+        [
+            loadNix
+            writePassword
+            writeGiteaUserPassword
+        ]
 
     let loadNginxConfig (onChange : Output<'a>) (PrivateKey privateKey) (address : Address) =
         let args = CommandArgs ()
@@ -305,7 +317,11 @@ umask "$OLD_UMASK"
             createSecretFile args "nextcloud" config.AdminPassword "/var/nextcloud-admin-pass"
             Command ("configure-nextcloud-user", args, deleteBeforeReplace)
 
-        [ configureNix ; createServerPass ; createUserPass ]
+        [
+            configureNix
+            createServerPass
+            createUserPass
+        ]
 
     let nixRebuild (onChange : OutputCrate list) (PrivateKey privateKey) (address : Address) =
         let args = CommandArgs ()
