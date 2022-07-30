@@ -98,24 +98,36 @@ module Program =
                     let nextCloudConfig =
                         Server.writeNextCloudConfig infectNix.Stdout SUBDOMAINS DOMAIN privateKey address
 
-                    // Wait for the config files to be written
-                    let! _ = nginxConfigFile.Urn
-                    let! _ = userConfigFile.Urn
-                    let! _ = nextCloudConfig.Urn
+                    let configFiles =
+                        [|
+                            nginxConfigFile
+                            userConfigFile
+                            nextCloudConfig
+                        |]
+                        |> Array.map (fun s -> s.Stdout)
+                        |> Output.sequence
 
-                    let configureNginx = Server.loadNginxConfig nginxConfigFile.Urn privateKey address
+                    // Wait for the config files to be written
+                    let! _ = configFiles
+
+                    let configureNginx = Server.loadNginxConfig nginxConfigFile.Stdout privateKey address
 
                     let configureUsers =
-                        Server.loadUserConfig [ OutputCrate.make configureNginx.Urn ] privateKey address
+                        Server.loadUserConfig [ OutputCrate.make configureNginx.Stdout ] privateKey address
 
                     let configureNextcloud =
-                        Server.loadNextCloudConfig configureUsers.Urn privateKey address NEXTCLOUD_CONFIG
+                        Server.loadNextCloudConfig configureUsers.Stdout privateKey address NEXTCLOUD_CONFIG
+                    // Wait for nextcloud to be configured
+                    let! _ =
+                        configureNextcloud
+                        |> List.map (fun c -> c.Stdout)
+                        |> Output.sequence
 
+                    // If this is a new node, reboot
                     let firstReboot =
                         Server.reboot
                             "post-infect"
-                            (configureNextcloud
-                             |> List.map (fun o -> OutputCrate.make o.Stdout))
+                            droplet.Urn
                             privateKey
                             address
 
@@ -136,7 +148,9 @@ module Program =
                             |> List.choose id
                             |> List.map (fun record -> record.Urn |> OutputCrate.make)
 
-                        OutputCrate.make firstReboot.Stdout :: dnsDeps
+                        OutputCrate.make (configFiles |> Output.map List.toArray)
+                        :: OutputCrate.make firstReboot.Stdout
+                        :: dnsDeps
 
                     let rebuild = Server.nixRebuild deps privateKey address
                     let! _ = rebuild.Stdout
