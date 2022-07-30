@@ -11,7 +11,7 @@ type BashString =
 [<RequireQualifiedAccess>]
 module BashString =
     let make (s : string) =
-        s.Replace ("'", "\"'\"")
+        s.Replace ("'", "'\"'\"'")
         |> sprintf "'%s'"
         |> BashString
 

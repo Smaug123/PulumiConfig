@@ -39,7 +39,6 @@ module Program =
 
     [<EntryPoint>]
     let main _argv =
-        let toTidyUp = ResizeArray ()
         let privateKey = FileInfo PRIVATE_KEY |> PrivateKey
         let publicKey = FileInfo (PRIVATE_KEY + ".pub") |> PublicKey
 
@@ -82,19 +81,14 @@ module Program =
                     let infectNix = Server.infectNix privateKey address
                     let! _ = infectNix.Stdout
 
-                    let nginxConfigFile, tmpFile =
+                    let nginxConfigFile =
                         Server.writeNginxConfig infectNix.Stdout nginxConfig privateKey address
 
-                    toTidyUp.Add tmpFile
-
-                    let userConfigFile, tmpFile2 =
+                    let userConfigFile =
                         Server.writeUserConfig infectNix.Stdout keys REMOTE_USERNAME privateKey address
 
-                    toTidyUp.Add tmpFile2
-
-                    let nextCloudConfig, tmpFile3 =
+                    let nextCloudConfig =
                         Server.writeNextCloudConfig infectNix.Stdout SUBDOMAINS DOMAIN privateKey address
-                    toTidyUp.Add tmpFile3
 
                     // Wait for the config files to be written
                     let! _ = nginxConfigFile.Urn
@@ -137,14 +131,11 @@ module Program =
 
                     let rebuild = Server.nixRebuild deps privateKey address
                     let! _ = rebuild.Stdout
-                    return tmpFile, tmpFile2
+                    return ()
                 }
                 |> ignore
             |> Deployment.RunAsync
             |> Async.AwaitTask
             |> Async.RunSynchronously
-
-        for file in toTidyUp do
-            printfn $"Now delete file {file.FullName}"
 
         output
