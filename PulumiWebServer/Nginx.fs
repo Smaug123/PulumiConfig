@@ -3,13 +3,13 @@ namespace PulumiWebServer
 type NginxConfig =
     {
         Domain : DomainName
-        WebSubdomain : string
+        WebSubdomain : WellKnownCname
         AcmeEmail : EmailAddress
     }
 
     member this.Domains =
         [ this.WebSubdomain ]
-        |> List.map (fun subdomain -> $"%s{subdomain}.{this.Domain}")
+        |> List.map (fun subdomain -> $"%O{subdomain}.{this.Domain}")
         |> fun subdomains -> this.Domain.ToString () :: subdomains
 
 [<RequireQualifiedAccess>]
@@ -17,7 +17,7 @@ module Nginx =
 
     let private trimStart (s : string) (target : string) =
         if target.StartsWith s then
-            target.[s.Length ..]
+            target[s.Length ..]
         else
             target
 
@@ -27,7 +27,7 @@ module Nginx =
             |> fun s ->
                 s
                     .Replace("@@DOMAIN@@", config.Domain.ToString ())
-                    .Replace("@@WEBROOT_SUBDOMAIN@@", config.WebSubdomain)
+                    .Replace("@@WEBROOT_SUBDOMAIN@@", config.WebSubdomain.ToString ())
                     .Replace ("@@ACME_EMAIL@@", config.AcmeEmail.ToString ())
 
         let certConfig =

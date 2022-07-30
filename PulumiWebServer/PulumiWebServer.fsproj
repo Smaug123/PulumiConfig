@@ -18,6 +18,8 @@
       <Compile Include="Pulumi.fs" />
       <Compile Include="Cloudflare.fs" />
       <Compile Include="DigitalOcean.fs" />
+      <Compile Include="NextCloud.fsi" />
+      <Compile Include="NextCloud.fs" />
       <Compile Include="Nginx.fs" />
       <Compile Include="Server.fs" />
       <Compile Include="Local.fs" />
@@ -25,6 +27,7 @@
       <EmbeddedResource Include="nginx.nix" />
       <EmbeddedResource Include="userconfig.nix" />
       <EmbeddedResource Include="gitea.nix" />
+      <EmbeddedResource Include="nextcloud.nix" />
     </ItemGroup>
     
 </Project>

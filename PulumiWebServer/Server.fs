@@ -61,38 +61,62 @@ module Server =
 
         Command ("nix-infect", args)
 
+    let contentAddressedCopy
+        (PrivateKey privateKey)
+        (address : Address)
+        (name : string)
+        (trigger : Output<'a>)
+        (targetPath : string)
+        (fileContents : string)
+        : Command
+        =
+        let args = CommandArgs ()
+        args.Connection <- Input.lift (connection privateKey address)
+
+        args.Triggers <-
+            trigger
+            |> Output.map (unbox<obj> >> Seq.singleton)
+            |> InputList.ofOutput
+
+        if targetPath.Contains '\''
+           || targetPath.Contains '\n' then
+            failwith $"Can't copy a file to a location with a quote mark in, got: {targetPath}"
+
+        let delimiter = "EOF"
+
+        if fileContents.Contains delimiter then
+            failwith "String contained delimiter; please implement something better"
+
+        let commandString =
+            [
+                $"cat <<{delimiter}"
+                fileContents
+                "EOF"
+            ]
+            |> String.concat "\n"
+
+        args.Create <- commandString
+        args.Delete <- $"rm '{targetPath}'"
+
+        Command (name, args)
+
     let writeNginxConfig
         (trigger : Output<'a>)
         (nginxConfig : NginxConfig)
-        (PrivateKey privateKey)
+        (privateKey : PrivateKey)
         (address : Address)
-        : CopyFile * FileInfo
+        : Command
         =
         let nginx = Nginx.createNixConfig nginxConfig
-
-        let tmpPath = Path.GetTempFileName () |> FileInfo
-        File.WriteAllText (tmpPath.FullName, nginx)
-        let args = CopyFileArgs ()
-        printfn "%s" tmpPath.FullName
-
-        args.Triggers <-
-            InputList.ofOutput<obj> (
-                trigger
-                |> Output.map (unbox<obj> >> Seq.singleton)
-            )
-
-        args.LocalPath <- Input.lift tmpPath.FullName
-        args.RemotePath <- Input.lift "/etc/nixos/nginx.nix"
-        args.Connection <- Input.lift (connection privateKey address)
-        CopyFile ("write-nginx-config", args), tmpPath
+        contentAddressedCopy privateKey address "write-nginx-config" trigger "/etc/nixos/nginx.nix" nginx
 
     let writeUserConfig
         (trigger : Output<'a>)
         (keys : SshKey seq)
         (Username username)
-        (PrivateKey privateKey)
+        (privateKey : PrivateKey)
         (address : Address)
-        : CopyFile * FileInfo
+        : Command
         =
         let userConfig =
             Utils.getEmbeddedResource "userconfig.nix"
@@ -106,48 +130,43 @@ module Server =
                     )
                     .Replace ("@@USER@@", username)
 
-        let tmpPath = Path.GetTempFileName () |> FileInfo
-        File.WriteAllText (tmpPath.FullName, userConfig)
-        let args = CopyFileArgs ()
-
-        args.Triggers <-
-            InputList.ofOutput<obj> (
-                trigger
-                |> Output.map (unbox<obj> >> Seq.singleton)
-            )
-
-        args.LocalPath <- Input.lift tmpPath.FullName
-        args.RemotePath <- Input.lift "/etc/nixos/userconfig.nix"
-        args.Connection <- Input.lift (connection privateKey address)
-        CopyFile ("write-user-config", args), tmpPath
+        contentAddressedCopy privateKey address "write-user-config" trigger "/etc/nixos/userconfig.nix" userConfig
 
     let writeGiteaConfig
         (trigger : Output<'a>)
         (subdomain : string)
         (DomainName domain)
-        (PrivateKey privateKey)
+        (privateKey : PrivateKey)
         (address : Address)
-        : CopyFile * FileInfo
+        : Command
         =
-        let userConfig =
+        let giteaConfig =
             Utils.getEmbeddedResource "gitea.nix"
             |> fun s -> s.Replace ("@@DOMAIN@@", domain)
             |> fun s -> s.Replace ("@@GITEA_SUBDOMAIN@@", subdomain)
 
-        let tmpPath = Path.GetTempFileName () |> FileInfo
-        File.WriteAllText (tmpPath.FullName, userConfig)
-        let args = CopyFileArgs ()
+        contentAddressedCopy privateKey address "write-gitea-config" trigger "/etc/nixos/gitea.nix" giteaConfig
 
-        args.Triggers <-
-            InputList.ofOutput<obj> (
-                trigger
-                |> Output.map (unbox<obj> >> Seq.singleton)
-            )
+    let writeNextCloudConfig
+        (trigger : Output<'a>)
+        (subdomains : Map<WellKnownSubdomain, string>)
+        (DomainName domain)
+        (privateKey : PrivateKey)
+        (address : Address)
+        : Command
+        =
+        let nextCloudConfig =
+            Utils.getEmbeddedResource "nextcloud.nix"
+            |> fun s -> s.Replace ("@@DOMAIN@@", domain)
+            |> fun s -> s.Replace ("@@NEXTCLOUD_SUBDOMAIN@@", subdomains[WellKnownSubdomain.Nextcloud])
 
-        args.LocalPath <- Input.lift tmpPath.FullName
-        args.RemotePath <- Input.lift "/etc/nixos/gitea.nix"
-        args.Connection <- Input.lift (connection privateKey address)
-        CopyFile ("write-gitea-config", args), tmpPath
+        contentAddressedCopy
+            privateKey
+            address
+            "write-nextcloud-config"
+            trigger
+            "/etc/nixos/nextcloud.nix"
+            nextCloudConfig
 
     let loadUserConfig (onChange : OutputCrate list) (PrivateKey privateKey) (address : Address) =
         let args = CommandArgs ()
@@ -205,6 +224,60 @@ module Server =
         args.Delete <- """sed -i '/nginx.nix/d' /etc/nixos/configuration.nix"""
         Command ("configure-nginx", args)
 
+    let loadNextCloudConfig
+        (onChange : Output<'a>)
+        (PrivateKey privateKey)
+        (address : Address)
+        (config : NextCloudConfig)
+        : Command list
+        =
+        let configureNix =
+            let args = CommandArgs ()
+
+            args.Triggers <-
+                InputList.ofOutput<obj> (
+                    onChange
+                    |> Output.map (unbox<obj> >> Seq.singleton)
+                )
+
+            args.Connection <- Input.lift (connection privateKey address)
+
+            args.Create <-
+                """sed -i '4i\
+        ./nextcloud.nix\
+    ' /etc/nixos/configuration.nix"""
+
+            args.Delete <- """sed -i '/nextcloud.nix/d' /etc/nixos/configuration.nix"""
+            Command ("configure-nextcloud-nix", args)
+
+        let configureNextCloud =
+            let args = CommandArgs ()
+
+            args.Triggers <-
+                InputList.ofOutput<obj> (
+                    onChange
+                    |> Output.map (unbox<obj> >> Seq.singleton)
+                )
+
+            args.Connection <- Input.lift (connection privateKey address)
+
+            let argsString =
+                $"""OLD_UMASK=$(umask) && \
+umask 077 && \
+echo {config.ServerPassword} > /var/nextcloud-db-pass && \
+chown nextcloud /var/nextcloud-db-pass && \
+echo {config.AdminPassword} > /var/nextcloud-admin-pass && \
+chown nextcloud /var/nextcloud-admin-pass && \
+umask "$OLD_UMASK"
+"""
+
+            args.Create <- Input.lift argsString
+
+            args.Delete <- """rm /var/nextcloud-db-pass && rm /var/nextcloud-admin-pass"""
+            Command ("configure-nextcloud", args)
+
+        [ configureNix ; configureNextCloud ]
+
     let nixRebuild (onChange : OutputCrate list) (PrivateKey privateKey) (address : Address) =
         let args = CommandArgs ()
         args.Connection <- Input.lift (connection privateKey address)
@@ -218,15 +291,15 @@ module Server =
 
         Command ("nixos-rebuild", args)
 
-    let reboot (stage : string) (onChange : Output<'a>) (PrivateKey privateKey) (address : Address) =
+    let reboot (stage : string) (onChange : OutputCrate list) (PrivateKey privateKey) (address : Address) =
         let args = CommandArgs ()
         args.Connection <- Input.lift (connection privateKey address)
 
         args.Triggers <-
-            InputList.ofOutput<obj> (
-                onChange
-                |> Output.map (unbox<obj> >> Seq.singleton)
-            )
+            onChange
+            |> OutputCrate.sequence
+            |> Output.map List.toSeq
+            |> InputList.ofOutput<obj>
 
         args.Create <- "shutdown -r now"
         Command ($"reboot-{stage}", args)

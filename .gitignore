@@ -356,3 +356,6 @@ MigrationBackup/
 
 /result
 .DS_Store
+
+/.profile
+/.profile-*-link

@@ -14,20 +14,39 @@ module Program =
 
     let DOMAIN = failwith "domain" |> DomainName
 
-    let SUBDOMAINS = [ "www" ]
+    let CNAMES =
+        [
+            WellKnownCname.Www, WellKnownCnameTarget.Root
+        ]
+        |> Map.ofList
+
+    let SUBDOMAINS =
+        [
+            WellKnownSubdomain.Nextcloud, "nextcloud"
+        ]
+        |> Map.ofList
 
     let REMOTE_USERNAME = failwith "username" |> Username
 
     let nginxConfig =
         {
             Domain = DOMAIN
-            WebSubdomain = "www"
+            WebSubdomain = WellKnownCname.Www
             AcmeEmail = ACME_EMAIL
         }
 
+    let NEXTCLOUD_CONFIG =
+        {
+            ServerPassword =
+                failwith "password for nextcloud user on machine"
+                |> BashString.make
+            AdminPassword =
+                failwith "password for admin user within nextcloud"
+                |> BashString.make
+        }
+
     [<EntryPoint>]
-    let main argv =
-        let toTidyUp = ResizeArray ()
+    let main _argv =
         let privateKey = FileInfo PRIVATE_KEY |> PrivateKey
         let publicKey = FileInfo (PRIVATE_KEY + ".pub") |> PublicKey
 
@@ -64,33 +83,41 @@ module Program =
                         }
 
                     let! zone = Cloudflare.getZone DOMAIN
-                    let dns = Cloudflare.addDns DOMAIN SUBDOMAINS zone address
+                    let dns = Cloudflare.addDns DOMAIN CNAMES SUBDOMAINS zone address
                     let! _ = Server.waitForReady privateKey address
 
                     let infectNix = Server.infectNix privateKey address
                     let! _ = infectNix.Stdout
 
-                    let nginxConfigFile, tmpFile =
+                    let nginxConfigFile =
                         Server.writeNginxConfig infectNix.Stdout nginxConfig privateKey address
 
-                    toTidyUp.Add tmpFile
-
-                    let userConfigFile, tmpFile2 =
+                    let userConfigFile =
                         Server.writeUserConfig infectNix.Stdout keys REMOTE_USERNAME privateKey address
 
-                    toTidyUp.Add tmpFile2
+                    let nextCloudConfig =
+                        Server.writeNextCloudConfig infectNix.Stdout SUBDOMAINS DOMAIN privateKey address
 
                     // Wait for the config files to be written
                     let! _ = nginxConfigFile.Urn
                     let! _ = userConfigFile.Urn
+                    let! _ = nextCloudConfig.Urn
 
                     let configureNginx = Server.loadNginxConfig nginxConfigFile.Urn privateKey address
 
                     let configureUsers =
                         Server.loadUserConfig [ OutputCrate.make configureNginx.Urn ] privateKey address
 
+                    let configureNextcloud =
+                        Server.loadNextCloudConfig configureUsers.Urn privateKey address NEXTCLOUD_CONFIG
+
                     let firstReboot =
-                        Server.reboot "post-infect" configureUsers.Stdout privateKey address
+                        Server.reboot
+                            "post-infect"
+                            (configureNextcloud
+                             |> List.map (fun o -> OutputCrate.make o.Stdout))
+                            privateKey
+                            address
 
                     let! _ = firstReboot.Stdout
                     // The nixos rebuild has blatted the known public key.
@@ -113,14 +140,11 @@ module Program =
 
                     let rebuild = Server.nixRebuild deps privateKey address
                     let! _ = rebuild.Stdout
-                    return tmpFile, tmpFile2
+                    return ()
                 }
                 |> ignore
             |> Deployment.RunAsync
             |> Async.AwaitTask
             |> Async.RunSynchronously
-
-        for file in toTidyUp do
-            printfn $"Now delete file {file.FullName}"
 
         output
