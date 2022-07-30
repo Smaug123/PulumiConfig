@@ -22,7 +22,7 @@ in {
       root = "/var/www/html";
     };
 
-# TODO - is this actually necessary given the www cname?
+    # TODO - is this actually necessary given the www cname?
     virtualHosts."@@WEBROOT_SUBDOMAIN@@.${domain}" = {
       addSSL = true;
       enableACME = true;

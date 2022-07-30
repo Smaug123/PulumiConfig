@@ -78,11 +78,15 @@ module Server =
             |> Output.map (unbox<obj> >> Seq.singleton)
             |> InputList.ofOutput
 
-        if targetPath.Contains '\'' || targetPath.Contains '\n' then
+        if targetPath.Contains '\''
+           || targetPath.Contains '\n' then
             failwith $"Can't copy a file to a location with a quote mark in, got: {targetPath}"
+
         let delimiter = "EOF"
+
         if fileContents.Contains delimiter then
             failwith "String contained delimiter; please implement something better"
+
         let commandString =
             [
                 $"cat <<{delimiter}"
@@ -90,6 +94,7 @@ module Server =
                 "EOF"
             ]
             |> String.concat "\n"
+
         args.Create <- commandString
         args.Delete <- $"rm '{targetPath}'"
 
@@ -155,7 +160,13 @@ module Server =
             |> fun s -> s.Replace ("@@DOMAIN@@", domain)
             |> fun s -> s.Replace ("@@NEXTCLOUD_SUBDOMAIN@@", subdomains[WellKnownSubdomain.Nextcloud])
 
-        contentAddressedCopy privateKey address "write-nextcloud-config" trigger "/etc/nixos/nextcloud.nix" nextCloudConfig
+        contentAddressedCopy
+            privateKey
+            address
+            "write-nextcloud-config"
+            trigger
+            "/etc/nixos/nextcloud.nix"
+            nextCloudConfig
 
     let loadUserConfig (onChange : OutputCrate list) (PrivateKey privateKey) (address : Address) =
         let args = CommandArgs ()
@@ -259,6 +270,7 @@ echo {config.AdminPassword} > /var/nextcloud-admin-pass && \
 chown nextcloud /var/nextcloud-admin-pass && \
 umask "$OLD_UMASK"
 """
+
             args.Create <- Input.lift argsString
 
             args.Delete <- """rm /var/nextcloud-db-pass && rm /var/nextcloud-admin-pass"""

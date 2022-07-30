@@ -103,5 +103,7 @@ module Cloudflare =
             )
             |> Seq.toList
 
-        (domain.ToString (), DnsRecord.ARecord (makeARecord (domain.ToString ()) ipAddress)) :: cnames @ subdomains
+        (domain.ToString (), DnsRecord.ARecord (makeARecord (domain.ToString ()) ipAddress))
+        :: cnames
+        @ subdomains
         |> Map.ofList

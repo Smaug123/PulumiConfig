@@ -20,7 +20,11 @@ module Program =
         ]
         |> Map.ofList
 
-    let SUBDOMAINS = [ WellKnownSubdomain.Nextcloud, "nextcloud" ] |> Map.ofList
+    let SUBDOMAINS =
+        [
+            WellKnownSubdomain.Nextcloud, "nextcloud"
+        ]
+        |> Map.ofList
 
     let REMOTE_USERNAME = failwith "username" |> Username
 
@@ -101,14 +105,15 @@ module Program =
                         Server.loadUserConfig [ OutputCrate.make configureNginx.Urn ] privateKey address
 
                     let configureNextcloud =
-                        Server.loadNextCloudConfig
-                            configureUsers.Urn
-                            privateKey
-                            address
-                            NEXTCLOUD_CONFIG
+                        Server.loadNextCloudConfig configureUsers.Urn privateKey address NEXTCLOUD_CONFIG
 
                     let firstReboot =
-                        Server.reboot "post-infect" (configureNextcloud |> List.map (fun o -> OutputCrate.make o.Stdout)) privateKey address
+                        Server.reboot
+                            "post-infect"
+                            (configureNextcloud
+                             |> List.map (fun o -> OutputCrate.make o.Stdout))
+                            privateKey
+                            address
 
                     let! _ = firstReboot.Stdout
                     // The nixos rebuild has blatted the known public key.
