@@ -1,6 +1,10 @@
-{ config, pkgs, ...}:
-let port = 3001; in
 {
+  config,
+  pkgs,
+  ...
+}: let
+  port = 3001;
+in {
   services.gitea = {
     enable = true;
     appName = "Gitea";
@@ -58,24 +62,23 @@ let port = 3001; in
   # The Gitea module does not allow adding users declaratively
   systemd.services.gitea-add-user = {
     description = "gitea-add-user";
-    wants = [ "gitea.service" ];
-    wantedBy = [ "multi-user.target" ];
-    path = [ pkgs.gitea ];
-    script =
-      ''TMPFILE=$(mktemp)
-PASSWORD=$(cat /var/gitea-admin-pass)
-set +e
-${pkgs.gitea}/bin/gitea admin user create --admin --username @@GITEA_ADMIN_USERNAME@@ --password "$PASSWORD" --email @@GITEA_ADMIN_EMAIL@@ 2>"$TMPFILE" 1>"$TMPFILE"
-EXITCODE=$?
-if [ $EXITCODE -eq 1 ]; then
-  if grep 'already exists' "$TMPFILE" 2>/dev/null 1>/dev/null; then
-    EXITCODE=0
-  fi
-fi
-cat "$TMPFILE"
-rm "$TMPFILE"
-exit $EXITCODE
-'';
+    wants = ["gitea.service"];
+    wantedBy = ["multi-user.target"];
+    path = [pkgs.gitea];
+    script = ''      TMPFILE=$(mktemp)
+      PASSWORD=$(cat /var/gitea-admin-pass)
+      set +e
+      ${pkgs.gitea}/bin/gitea admin user create --admin --username @@GITEA_ADMIN_USERNAME@@ --password "$PASSWORD" --email @@GITEA_ADMIN_EMAIL@@ 2>"$TMPFILE" 1>"$TMPFILE"
+      EXITCODE=$?
+      if [ $EXITCODE -eq 1 ]; then
+        if grep 'already exists' "$TMPFILE" 2>/dev/null 1>/dev/null; then
+          EXITCODE=0
+        fi
+      fi
+      cat "$TMPFILE"
+      rm "$TMPFILE"
+      exit $EXITCODE
+    '';
     serviceConfig = {
       Restart = "no";
       Type = "oneshot";
@@ -83,6 +86,6 @@ exit $EXITCODE
       Group = "gitea";
       WorkingDirectory = config.services.gitea.stateDir;
     };
-    environment = { GITEA_WORK_DIR = config.services.gitea.stateDir; };
+    environment = {GITEA_WORK_DIR = config.services.gitea.stateDir;};
   };
 }
