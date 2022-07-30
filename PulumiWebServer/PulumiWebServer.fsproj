@@ -20,6 +20,7 @@
       <Compile Include="DigitalOcean.fs" />
       <Compile Include="NextCloud.fsi" />
       <Compile Include="NextCloud.fs" />
+      <Compile Include="Gitea.fs" />
       <Compile Include="Nginx.fs" />
       <Compile Include="Server.fs" />
       <Compile Include="Local.fs" />

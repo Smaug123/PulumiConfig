@@ -23,6 +23,7 @@ module Program =
     let SUBDOMAINS =
         [
             WellKnownSubdomain.Nextcloud, "nextcloud"
+            WellKnownSubdomain.Gitea, "gitea"
         ]
         |> Map.ofList
 
@@ -33,6 +34,22 @@ module Program =
             Domain = DOMAIN
             WebSubdomain = WellKnownCname.Www
             AcmeEmail = ACME_EMAIL
+        }
+
+    let GITEA_CONFIG =
+        {
+            GiteaConfig.ServerPassword =
+                failwith "password for the gitea Linux user"
+                |> BashString.make
+            GiteaConfig.AdminPassword =
+                failwith "password for the admin user within gitea"
+                |> BashString.make
+            GiteaConfig.AdminUsername =
+                failwith "username for the admin user within gitea"
+                |> BashString.make
+            GiteaConfig.AdminEmailAddress =
+                failwith "email address for the admin user within gitea"
+                |> BashString.make
         }
 
     let NEXTCLOUD_CONFIG =
@@ -98,11 +115,15 @@ module Program =
                     let nextCloudConfig =
                         Server.writeNextCloudConfig infectNix.Stdout SUBDOMAINS DOMAIN privateKey address
 
+                    let giteaConfig =
+                        Server.writeGiteaConfig infectNix.Stdout SUBDOMAINS DOMAIN privateKey address GITEA_CONFIG
+
                     let configFiles =
                         [|
                             nginxConfigFile
                             userConfigFile
                             nextCloudConfig
+                            giteaConfig
                         |]
                         |> Array.map (fun s -> s.Stdout)
                         |> Output.sequence
@@ -123,11 +144,22 @@ module Program =
 
                     let configureNextcloud =
                         Server.loadNextCloudConfig configureUsers.Stdout privateKey address NEXTCLOUD_CONFIG
-                    // Wait for nextcloud to be configured
-                    let! _ =
+
+                    let configuredNextCloud =
                         configureNextcloud
                         |> List.map (fun c -> c.Stdout)
                         |> Output.sequence
+
+                    // Wait for nextcloud to be configured
+                    let! _ = configuredNextCloud
+
+                    let configureGitea =
+                        Server.loadGiteaConfig giteaConfig.Stdout privateKey address GITEA_CONFIG
+                        |> List.map (fun c -> c.Stdout)
+                        |> Output.sequence
+
+                    // Wait for Gitea to be configured
+                    let! _ = configureGitea
 
                     // If this is a new node, reboot
                     let firstReboot = Server.reboot "post-infect" droplet.Urn privateKey address

@@ -9,6 +9,24 @@ open Pulumi.Command.Remote
 [<RequireQualifiedAccess>]
 module Server =
 
+    let createSecretFile (args : CommandArgs) (username : string) (toWrite : BashString) (filePath : string) : unit =
+        if filePath.Contains "'" then
+            failwith $"filepath contained quote: {filePath}"
+
+        if username.Contains "'" then
+            failwith $"username contained quote: {username}"
+
+        let argsString =
+            $"""OLD_UMASK=$(umask) && \
+umask 077 && \
+echo {toWrite} > '{filePath}' && \
+chown '{username}' '{filePath}' && \
+umask "$OLD_UMASK"
+"""
+
+        args.Create <- Input.ofOutput (Output.CreateSecret argsString)
+        args.Delete <- $"rm -f '{filePath}'"
+
     let connection (privateKey : FileInfo) (address : Address) =
         let inputArgs = Inputs.ConnectionArgs ()
 
@@ -99,10 +117,10 @@ module Server =
         let commandString =
             [
                 "{"
-                $"cat <<{delimiter}"
+                $"cat <<'{delimiter}'"
                 fileContents
                 delimiter
-                "} > '{targetPath}'"
+                sprintf "} | tee '%s'" targetPath
             ]
             |> String.concat "\n"
             |> Output.CreateSecret
@@ -146,16 +164,19 @@ module Server =
 
     let writeGiteaConfig
         (trigger : Output<'a>)
-        (subdomain : string)
+        (subdomains : Map<WellKnownSubdomain, string>)
         (DomainName domain)
         (privateKey : PrivateKey)
         (address : Address)
+        (config : GiteaConfig)
         : Command
         =
         let giteaConfig =
             Utils.getEmbeddedResource "gitea.nix"
             |> fun s -> s.Replace ("@@DOMAIN@@", domain)
-            |> fun s -> s.Replace ("@@GITEA_SUBDOMAIN@@", subdomain)
+            |> fun s -> s.Replace ("@@GITEA_SUBDOMAIN@@", subdomains[WellKnownSubdomain.Gitea])
+            |> fun s -> s.Replace ("@@GITEA_ADMIN_USERNAME@@", config.AdminUsername.ToString ())
+            |> fun s -> s.Replace ("@@GITEA_ADMIN_EMAIL@@", config.AdminEmailAddress.ToString ())
 
         contentAddressedCopy privateKey address "write-gitea-config" trigger "/etc/nixos/gitea.nix" giteaConfig
 
@@ -180,6 +201,13 @@ module Server =
             "/etc/nixos/nextcloud.nix"
             nextCloudConfig
 
+    let addToNixFileCommand (args : CommandArgs) (filename : string) : unit =
+        args.Create <-
+            $"""sed -i '4i\
+    ./{filename}' /etc/nixos/configuration.nix"""
+
+        args.Delete <- $"""sed -i -n '/{filename}/!p' /etc/nixos/configuration.nix"""
+
     let loadUserConfig (onChange : OutputCrate list) (PrivateKey privateKey) (address : Address) =
         let args = CommandArgs ()
 
@@ -191,31 +219,52 @@ module Server =
 
         args.Connection <- connection privateKey address
 
-        args.Create <-
-            """sed -i '4i\
-    ./userconfig.nix\
-' /etc/nixos/configuration.nix"""
+        addToNixFileCommand args "userconfig.nix"
 
-        args.Delete <- """sed -i -n '/userconfig.nix/!p' /etc/nixos/configuration.nix"""
         Command ("configure-users", args, deleteBeforeReplace)
 
-    let loadGiteaConfig<'a> (onChange : Output<'a>) (PrivateKey privateKey) (address : Address) =
-        let args = CommandArgs ()
+    let loadGiteaConfig<'a>
+        (onChange : Output<'a>)
+        (PrivateKey privateKey)
+        (address : Address)
+        (config : GiteaConfig)
+        : Command list
+        =
+        let loadNix =
+            let args = CommandArgs ()
 
-        args.Triggers <-
-            onChange
-            |> Output.map (unbox<obj> >> Seq.singleton)
-            |> InputList.ofOutput
+            args.Triggers <-
+                onChange
+                |> Output.map (unbox<obj> >> Seq.singleton)
+                |> InputList.ofOutput
 
-        args.Connection <- connection privateKey address
+            args.Connection <- connection privateKey address
 
-        args.Create <-
-            """sed -i '4i\
-    ./gitea.nix\
-' /etc/nixos/configuration.nix"""
+            addToNixFileCommand args "gitea.nix"
 
-        args.Delete <- """sed -i -n '/gitea.nix/!p' /etc/nixos/configuration.nix"""
-        Command ("configure-gitea", args, deleteBeforeReplace)
+            Command ("configure-gitea", args, deleteBeforeReplace)
+
+        let writePassword =
+            let args = CommandArgs ()
+            args.Connection <- connection privateKey address
+
+            createSecretFile args "gitea" config.ServerPassword "/var/gitea-db-pass"
+
+            Command ("configure-gitea-password", args, deleteBeforeReplace)
+
+        let writeGiteaUserPassword =
+            let args = CommandArgs ()
+            args.Connection <- connection privateKey address
+
+            createSecretFile args "gitea" config.AdminPassword "/var/gitea-admin-pass"
+
+            Command ("write-gitea-password", args, deleteBeforeReplace)
+
+        [
+            loadNix
+            writePassword
+            writeGiteaUserPassword
+        ]
 
     let loadNginxConfig (onChange : Output<'a>) (PrivateKey privateKey) (address : Address) =
         let args = CommandArgs ()
@@ -228,12 +277,8 @@ module Server =
 
         args.Connection <- connection privateKey address
 
-        args.Create <-
-            """sed -i '4i\
-    ./nginx.nix\
-' /etc/nixos/configuration.nix"""
+        addToNixFileCommand args "nginx.nix"
 
-        args.Delete <- """sed -i -n '/nginx.nix/!p' /etc/nixos/configuration.nix"""
         Command ("configure-nginx", args, deleteBeforeReplace)
 
     let loadNextCloudConfig
@@ -254,40 +299,29 @@ module Server =
 
             args.Connection <- connection privateKey address
 
-            args.Create <-
-                """sed -i '4i\
-        ./nextcloud.nix' /etc/nixos/configuration.nix"""
+            addToNixFileCommand args "nextcloud.nix"
 
-            args.Delete <- """sed -i -n '/nextcloud.nix/!p' /etc/nixos/configuration.nix"""
             Command ("configure-nextcloud-nix", args, deleteBeforeReplace)
 
-        let configureNextCloud =
+        let createServerPass =
             let args = CommandArgs ()
-
-            args.Triggers <-
-                InputList.ofOutput<obj> (
-                    onChange
-                    |> Output.map (unbox<obj> >> Seq.singleton)
-                )
 
             args.Connection <- connection privateKey address
 
-            let argsString =
-                $"""OLD_UMASK=$(umask) && \
-umask 077 && \
-echo {config.ServerPassword} > /var/nextcloud-db-pass && \
-chown nextcloud /var/nextcloud-db-pass && \
-echo {config.AdminPassword} > /var/nextcloud-admin-pass && \
-chown nextcloud /var/nextcloud-admin-pass && \
-umask "$OLD_UMASK"
-"""
-
-            args.Create <- Input.ofOutput (Output.CreateSecret argsString)
-
-            args.Delete <- """rm -f /var/nextcloud-db-pass && rm -f /var/nextcloud-admin-pass"""
+            createSecretFile args "nextcloud" config.ServerPassword "/var/nextcloud-db-pass"
             Command ("configure-nextcloud", args, deleteBeforeReplace)
 
-        [ configureNix ; configureNextCloud ]
+        let createUserPass =
+            let args = CommandArgs ()
+            args.Connection <- connection privateKey address
+            createSecretFile args "nextcloud" config.AdminPassword "/var/nextcloud-admin-pass"
+            Command ("configure-nextcloud-user", args, deleteBeforeReplace)
+
+        [
+            configureNix
+            createServerPass
+            createUserPass
+        ]
 
     let nixRebuild (onChange : OutputCrate list) (PrivateKey privateKey) (address : Address) =
         let args = CommandArgs ()
