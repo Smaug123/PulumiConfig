@@ -14,19 +14,31 @@ module Program =
 
     let DOMAIN = failwith "domain" |> DomainName
 
-    let SUBDOMAINS = [ "www" ]
+    let CNAMES =
+        [
+            WellKnownCname.Www, WellKnownCnameTarget.Root
+        ]
+        |> Map.ofList
+
+    let SUBDOMAINS = [ WellKnownSubdomain.Nextcloud, "nextcloud" ] |> Map.ofList
 
     let REMOTE_USERNAME = failwith "username" |> Username
 
     let nginxConfig =
         {
             Domain = DOMAIN
-            WebSubdomain = "www"
+            WebSubdomain = WellKnownCname.Www
             AcmeEmail = ACME_EMAIL
         }
 
+    let NEXTCLOUD_CONFIG =
+        {
+            ServerPassword = failwith "password for nextcloud user on machine" |> BashString.make
+            AdminPassword = failwith "password for admin user within nextcloud" |> BashString.make
+        }
+
     [<EntryPoint>]
-    let main argv =
+    let main _argv =
         let toTidyUp = ResizeArray ()
         let privateKey = FileInfo PRIVATE_KEY |> PrivateKey
         let publicKey = FileInfo (PRIVATE_KEY + ".pub") |> PublicKey
@@ -64,7 +76,7 @@ module Program =
                         }
 
                     let! zone = Cloudflare.getZone DOMAIN
-                    let dns = Cloudflare.addDns DOMAIN SUBDOMAINS zone address
+                    let dns = Cloudflare.addDns DOMAIN CNAMES SUBDOMAINS zone address
                     let! _ = Server.waitForReady privateKey address
 
                     let infectNix = Server.infectNix privateKey address
@@ -80,17 +92,29 @@ module Program =
 
                     toTidyUp.Add tmpFile2
 
+                    let nextCloudConfig, tmpFile3 =
+                        Server.writeNextCloudConfig infectNix.Stdout SUBDOMAINS DOMAIN privateKey address
+                    toTidyUp.Add tmpFile3
+
                     // Wait for the config files to be written
                     let! _ = nginxConfigFile.Urn
                     let! _ = userConfigFile.Urn
+                    let! _ = nextCloudConfig.Urn
 
                     let configureNginx = Server.loadNginxConfig nginxConfigFile.Urn privateKey address
 
                     let configureUsers =
                         Server.loadUserConfig [ OutputCrate.make configureNginx.Urn ] privateKey address
 
+                    let configureNextcloud =
+                        Server.loadNextCloudConfig
+                            configureUsers.Urn
+                            privateKey
+                            address
+                            NEXTCLOUD_CONFIG
+
                     let firstReboot =
-                        Server.reboot "post-infect" configureUsers.Stdout privateKey address
+                        Server.reboot "post-infect" (configureNextcloud |> List.map (fun o -> OutputCrate.make o.Stdout)) privateKey address
 
                     let! _ = firstReboot.Stdout
                     // The nixos rebuild has blatted the known public key.

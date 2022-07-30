@@ -64,3 +64,22 @@ type Address =
             | None -> ""
 
         [ ipv4 ; ipv6 ] |> String.concat " ; "
+
+type WellKnownSubdomain =
+    | Nextcloud
+    override this.ToString () =
+        match this with
+        | Nextcloud -> "nextcloud"
+
+type WellKnownCnameTarget =
+    | Root
+    static member Reify (DomainName domain) (target : WellKnownCnameTarget) : string =
+        match target with
+        | WellKnownCnameTarget.Root ->
+            domain
+
+type WellKnownCname =
+    | Www
+    override this.ToString () =
+        match this with
+        | Www -> "www"

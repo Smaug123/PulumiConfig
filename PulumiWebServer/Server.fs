@@ -149,6 +149,34 @@ module Server =
         args.Connection <- Input.lift (connection privateKey address)
         CopyFile ("write-gitea-config", args), tmpPath
 
+    let writeNextCloudConfig
+        (trigger : Output<'a>)
+        (subdomains : Map<WellKnownSubdomain, string>)
+        (DomainName domain)
+        (PrivateKey privateKey)
+        (address : Address)
+        : CopyFile * FileInfo
+        =
+        let userConfig =
+            Utils.getEmbeddedResource "nextcloud.nix"
+            |> fun s -> s.Replace ("@@DOMAIN@@", domain)
+            |> fun s -> s.Replace ("@@NEXTCLOUD_SUBDOMAIN@@", subdomains[WellKnownSubdomain.Nextcloud])
+
+        let tmpPath = Path.GetTempFileName () |> FileInfo
+        File.WriteAllText (tmpPath.FullName, userConfig)
+        let args = CopyFileArgs ()
+
+        args.Triggers <-
+            InputList.ofOutput<obj> (
+                trigger
+                |> Output.map (unbox<obj> >> Seq.singleton)
+            )
+
+        args.LocalPath <- Input.lift tmpPath.FullName
+        args.RemotePath <- Input.lift "/etc/nixos/nextcloud.nix"
+        args.Connection <- Input.lift (connection privateKey address)
+        CopyFile ("write-nextcloud-config", args), tmpPath
+
     let loadUserConfig (onChange : OutputCrate list) (PrivateKey privateKey) (address : Address) =
         let args = CommandArgs ()
 
@@ -205,6 +233,58 @@ module Server =
         args.Delete <- """sed -i '/nginx.nix/d' /etc/nixos/configuration.nix"""
         Command ("configure-nginx", args)
 
+    let loadNextCloudConfig
+        (onChange : Output<'a>)
+        (PrivateKey privateKey)
+        (address : Address)
+        (config : NextCloudConfig)
+        : Command list
+        =
+        let configureNix =
+            let args = CommandArgs ()
+
+            args.Triggers <-
+                InputList.ofOutput<obj> (
+                    onChange
+                    |> Output.map (unbox<obj> >> Seq.singleton)
+                )
+
+            args.Connection <- Input.lift (connection privateKey address)
+
+            args.Create <-
+                """sed -i '4i\
+        ./nextcloud.nix\
+    ' /etc/nixos/configuration.nix"""
+
+            args.Delete <- """sed -i '/nextcloud.nix/d' /etc/nixos/configuration.nix"""
+            Command ("configure-nextcloud-nix", args)
+
+        let configureNextCloud =
+            let args = CommandArgs ()
+
+            args.Triggers <-
+                InputList.ofOutput<obj> (
+                    onChange
+                    |> Output.map (unbox<obj> >> Seq.singleton)
+                )
+
+            args.Connection <- Input.lift (connection privateKey address)
+
+            args.Create <-
+                $"""OLD_UMASK=$(umask) && \
+umask 077 && \
+echo ${config.ServerPassword} > /var/nextcloud-db-pass && \
+chown nextcloud /var/nextcloud-db-pass && \
+echo ${config.AdminPassword} > /var/nextcloud-admin-pass && \
+chown nextcloud /var/nextcloud-admin-pass && \
+umask "$OLD_UMASK"
+"""
+
+            args.Delete <- """rm /var/nextcloud-db-pass && rm /var/nextcloud-admin-pass"""
+            Command ("configure-nextcloud", args)
+
+        [ configureNix ; configureNextCloud ]
+
     let nixRebuild (onChange : OutputCrate list) (PrivateKey privateKey) (address : Address) =
         let args = CommandArgs ()
         args.Connection <- Input.lift (connection privateKey address)
@@ -218,15 +298,15 @@ module Server =
 
         Command ("nixos-rebuild", args)
 
-    let reboot (stage : string) (onChange : Output<'a>) (PrivateKey privateKey) (address : Address) =
+    let reboot (stage : string) (onChange : OutputCrate list) (PrivateKey privateKey) (address : Address) =
         let args = CommandArgs ()
         args.Connection <- Input.lift (connection privateKey address)
 
         args.Triggers <-
-            InputList.ofOutput<obj> (
-                onChange
-                |> Output.map (unbox<obj> >> Seq.singleton)
-            )
+            onChange
+            |> OutputCrate.sequence
+            |> Output.map List.toSeq
+            |> InputList.ofOutput<obj>
 
         args.Create <- "shutdown -r now"
         Command ($"reboot-{stage}", args)
