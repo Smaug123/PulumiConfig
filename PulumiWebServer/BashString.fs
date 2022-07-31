@@ -2,15 +2,23 @@ namespace PulumiWebServer
 
 type BashString =
     private
-    | BashString of string
+        {
+            Original : string
+            Safe : string
+        }
 
-    override this.ToString () =
-        match this with
-        | BashString s -> s
+    override this.ToString () = this.Safe
 
 [<RequireQualifiedAccess>]
 module BashString =
     let make (s : string) =
-        s.Replace ("'", "'\"'\"'")
-        |> sprintf "'%s'"
-        |> BashString
+        {
+            Original = s
+            Safe =
+                if System.Object.ReferenceEquals (s, null) then
+                    null
+                else
+                    s.Replace ("'", "'\"'\"'") |> sprintf "'%s'"
+        }
+
+    let unsafeOriginal (s : BashString) = s.Original

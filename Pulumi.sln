@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "PulumiWebServer", "PulumiWebServer\PulumiWebServer.fsproj", "{289B2402-80C5-47EB-896F-BEF9A751DE61}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Test", "Test\Test.fsproj", "{DD674C31-8BC3-4A8A-AF47-BE0A15CDE45E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{289B2402-80C5-47EB-896F-BEF9A751DE61}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{289B2402-80C5-47EB-896F-BEF9A751DE61}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{289B2402-80C5-47EB-896F-BEF9A751DE61}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD674C31-8BC3-4A8A-AF47-BE0A15CDE45E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD674C31-8BC3-4A8A-AF47-BE0A15CDE45E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD674C31-8BC3-4A8A-AF47-BE0A15CDE45E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD674C31-8BC3-4A8A-AF47-BE0A15CDE45E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

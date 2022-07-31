@@ -5,10 +5,38 @@ open Pulumi.Command.Remote
 
 type ZoneId = ZoneId of string
 
-type PublicKey = PublicKey of FileInfo
-type PrivateKey = PrivateKey of FileInfo
+[<NoComparison ; CustomEquality>]
+type PublicKey =
+    | PublicKey of FileInfo
 
-type Username = Username of string
+    override this.Equals (other : obj) =
+        match this, other with
+        | PublicKey this, (:? PublicKey as PublicKey other) -> this.FullName = other.FullName
+        | _, _ -> false
+
+    override this.GetHashCode () =
+        match this with
+        | PublicKey p -> p.FullName.GetHashCode ()
+
+[<NoComparison ; CustomEquality>]
+type PrivateKey =
+    | PrivateKey of FileInfo
+
+    override this.Equals (other : obj) =
+        match this, other with
+        | PrivateKey this, (:? PrivateKey as PrivateKey other) -> this.FullName = other.FullName
+        | _, _ -> false
+
+    override this.GetHashCode () =
+        match this with
+        | PrivateKey p -> p.FullName.GetHashCode ()
+
+type Username =
+    | Username of string
+
+    override this.ToString () =
+        match this with
+        | Username s -> s
 
 type SshFingerprint = SshFingerprint of string
 
@@ -77,6 +105,14 @@ type WellKnownSubdomain =
         | Gitea -> "gitea"
         | Radicale -> "calendar"
 
+    static member Parse (s : string) =
+        match s with
+        | "nextcloud" -> WellKnownSubdomain.Nextcloud
+        | "gitea" -> WellKnownSubdomain.Gitea
+        | "calendar" -> WellKnownSubdomain.Radicale
+        | _ -> failwith $"Failed to deserialise: {s}"
+
+
 type WellKnownCnameTarget =
     | Root
 
@@ -84,9 +120,23 @@ type WellKnownCnameTarget =
         match target with
         | WellKnownCnameTarget.Root -> domain
 
+    static member Serialise (t : WellKnownCnameTarget) : string =
+        match t with
+        | WellKnownCnameTarget.Root -> "root"
+
+    static member Deserialise (t : string) : WellKnownCnameTarget =
+        match t with
+        | "root" -> WellKnownCnameTarget.Root
+        | _ -> failwith $"Failed to deserialise: {t}"
+
 type WellKnownCname =
     | Www
 
     override this.ToString () =
         match this with
         | Www -> "www"
+
+    static member Parse (s : string) =
+        match s with
+        | "www" -> WellKnownCname.Www
+        | _ -> failwith $"Failed to deserialise: {s}"

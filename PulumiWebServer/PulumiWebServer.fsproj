@@ -6,6 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
         <PackageReference Include="Pulumi" Version="3.37.2" />
         <PackageReference Include="Pulumi.Cloudflare" Version="4.8.0" />
         <PackageReference Include="Pulumi.Command" Version="0.4.1" />
@@ -30,6 +31,7 @@
       <Compile Include="Server.fs" />
       <Compile Include="Radicale.fs" />
       <Compile Include="Local.fs" />
+      <Compile Include="Configuration.fs" />
       <Compile Include="Program.fs" />
       <EmbeddedResource Include="Nix\nginx.nix" />
       <EmbeddedResource Include="Nix\userconfig.nix" />

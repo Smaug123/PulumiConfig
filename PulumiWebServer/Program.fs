@@ -1,82 +1,73 @@
 ﻿namespace PulumiWebServer
 
-open System
 open Pulumi
 open Pulumi.DigitalOcean
 open System.IO
 
 module Program =
-    // Anything in this file is expected to be user-configured.
-    let PRIVATE_KEY =
-        Path.Combine (Environment.GetFolderPath Environment.SpecialFolder.UserProfile, ".ssh", "id_ed25519")
 
-    let ACME_EMAIL = failwith "email address" |> EmailAddress
-
-    let DOMAIN = failwith "domain" |> DomainName
-
-    let CNAMES =
-        [
-            WellKnownCname.Www, WellKnownCnameTarget.Root
-        ]
-        |> Map.ofList
-
-    let SUBDOMAINS =
-        [
-            WellKnownSubdomain.Nextcloud, "nextcloud"
-            WellKnownSubdomain.Gitea, "gitea"
-            WellKnownSubdomain.Radicale, "calendar"
-        ]
-        |> Map.ofList
-
-    let REMOTE_USERNAME = failwith "username" |> Username
-
-    let nginxConfig =
+    let config : Configuration =
         {
-            Domain = DOMAIN
-            WebSubdomain = WellKnownCname.Www
-            AcmeEmail = ACME_EMAIL
-        }
-
-    let GITEA_CONFIG =
-        {
-            GiteaConfig.ServerPassword =
-                failwith "password for the gitea Linux user"
-                |> BashString.make
-            GiteaConfig.AdminPassword =
-                failwith "password for the admin user within gitea"
-                |> BashString.make
-            GiteaConfig.AdminUsername =
-                failwith "username for the admin user within gitea"
-                |> BashString.make
-            GiteaConfig.AdminEmailAddress =
-                failwith "email address for the admin user within gitea"
-                |> BashString.make
-        }
-
-    let NEXTCLOUD_CONFIG =
-        {
-            ServerPassword =
-                failwith "password for nextcloud user on machine"
-                |> BashString.make
-            AdminPassword =
-                failwith "password for admin user within nextcloud"
-                |> BashString.make
-        }
-
-    let RADICALE_CONFIG =
-        {
-            User = failwith "Username to log in to Radicale"
-            Password = failwith "Password to log in to Radicale"
+            PrivateKey =
+                FileInfo (failwith "path to private key")
+                |> PrivateKey
+            PublicKey =
+                FileInfo (failwith "path to public key for that private key")
+                |> PublicKey
+            AcmeEmail = failwith "email address for ACME emails from Let's Encrypt"
+            Domain = failwith "domain"
+            RemoteUsername = failwith "username on remote machine" |> Username
+            GiteaConfig =
+                {
+                    GiteaConfig.ServerPassword =
+                        failwith "password for the gitea Linux user"
+                        |> BashString.make
+                    GiteaConfig.AdminPassword =
+                        failwith "password for the admin user within gitea"
+                        |> BashString.make
+                    GiteaConfig.AdminUsername =
+                        failwith "username for the admin user within gitea"
+                        |> BashString.make
+                    GiteaConfig.AdminEmailAddress =
+                        failwith "email address for the admin user within gitea"
+                        |> BashString.make
+                }
+                |> Some
+            NextCloudConfig =
+                {
+                    ServerPassword =
+                        failwith "password for nextcloud user on machine"
+                        |> BashString.make
+                    AdminPassword =
+                        failwith "password for admin user within nextcloud"
+                        |> BashString.make
+                }
+                |> Some
+            RadicaleConfig =
+                {
+                    User = failwith "Username to log in to Radicale"
+                    Password = failwith "Password to log in to Radicale"
+                }
+                |> Some
+            Cnames =
+                [
+                    WellKnownCname.Www, WellKnownCnameTarget.Root
+                ]
+                |> Map.ofList
+            Subdomains =
+                [
+                    WellKnownSubdomain.Nextcloud, "nextcloud"
+                    WellKnownSubdomain.Gitea, "gitea"
+                    WellKnownSubdomain.Radicale, "calendar"
+                ]
+                |> Map.ofList
         }
 
     [<EntryPoint>]
     let main _argv =
-        let privateKey = FileInfo PRIVATE_KEY |> PrivateKey
-        let publicKey = FileInfo (PRIVATE_KEY + ".pub") |> PublicKey
-
         fun () ->
             output {
-                let key = DigitalOcean.saveSshKey publicKey
+                let key = DigitalOcean.saveSshKey config.PublicKey
 
                 let! keys =
                     DigitalOcean.storedSshKeys key.Urn
@@ -104,16 +95,19 @@ module Program =
                         IPv6 = Option.ofObj ipv6
                     }
 
-                let! zone = Cloudflare.getZone DOMAIN
-                let dns = Cloudflare.addDns DOMAIN CNAMES SUBDOMAINS zone address
-                let! _ = Server.waitForReady privateKey address
+                let! zone = Cloudflare.getZone config.Domain
 
-                let infectNix = Server.infectNix privateKey address
+                let dns =
+                    Cloudflare.addDns config.Domain config.Cnames config.Subdomains zone address
+
+                let! _ = Server.waitForReady config.PrivateKey address
+
+                let infectNix = Server.infectNix config.PrivateKey address
                 let! _ = infectNix.Stdout
 
                 let initialSetupModules =
                     [
-                        Server.configureUser infectNix.Stdout REMOTE_USERNAME keys privateKey address
+                        Server.configureUser infectNix.Stdout config.RemoteUsername keys config.PrivateKey address
                     ]
 
                 let! _ =
@@ -131,20 +125,41 @@ module Program =
                     |> Output.sequence
 
                 // If this is a new node, reboot
-                let firstReboot = Server.reboot "post-infect" droplet.Urn privateKey address
+                let firstReboot = Server.reboot "post-infect" droplet.Urn config.PrivateKey address
                 let! _ = firstReboot.Stdout
 
                 // The nixos rebuild has blatted the known public key.
                 Local.forgetKey address
-                let! _ = Server.waitForReady privateKey address
+                let! _ = Server.waitForReady config.PrivateKey address
 
                 let modules =
                     [
-                        Nginx.configure infectNix.Stdout privateKey address nginxConfig
-                        Gitea.configure infectNix.Stdout DOMAIN SUBDOMAINS privateKey address GITEA_CONFIG
-                        NextCloud.configure infectNix.Stdout SUBDOMAINS DOMAIN privateKey address NEXTCLOUD_CONFIG
-                        Radicale.configure infectNix.Stdout SUBDOMAINS DOMAIN privateKey address RADICALE_CONFIG
+                        Nginx.configure infectNix.Stdout config.PrivateKey address config.NginxConfig
+                        |> Some
+                        config.GiteaConfig
+                        |> Option.map (
+                            Gitea.configure infectNix.Stdout config.Subdomains config.Domain config.PrivateKey address
+                        )
+                        config.NextCloudConfig
+                        |> Option.map (
+                            NextCloud.configure
+                                infectNix.Stdout
+                                config.Subdomains
+                                config.Domain
+                                config.PrivateKey
+                                address
+                        )
+                        config.RadicaleConfig
+                        |> Option.map (
+                            Radicale.configure
+                                infectNix.Stdout
+                                config.Subdomains
+                                config.Domain
+                                config.PrivateKey
+                                address
+                        )
                     ]
+                    |> List.choose id
 
                 let configFiles =
                     modules
@@ -179,7 +194,7 @@ module Program =
                     OutputCrate.make (configFiles |> Output.map List.toArray)
                     :: OutputCrate.make firstReboot.Stdout :: dnsDeps
 
-                let rebuild = Server.nixRebuild deps privateKey address
+                let rebuild = Server.nixRebuild deps config.PrivateKey address
                 let! _ = rebuild.Stdout
                 return ()
             }

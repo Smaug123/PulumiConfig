@@ -78,8 +78,8 @@ module Gitea =
 
     let configure<'a>
         (infectNixTrigger : Output<'a>)
-        (domain : DomainName)
         (subdomains : Map<WellKnownSubdomain, string>)
+        (domain : DomainName)
         (privateKey : PrivateKey)
         (address : Address)
         (config : GiteaConfig)
