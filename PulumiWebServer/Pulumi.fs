@@ -35,7 +35,7 @@ module OutputCrate =
             member _.Apply e = e.Eval o
         }
 
-    // Ewww but this is the type signature we need for consumption by Pulumi
+    // Yuck but this is the type signature we need for consumption by Pulumi
     let sequence (xs : OutputCrate seq) : obj list Output =
         let func (o : obj list Output) (x : OutputCrate) : obj list Output =
             { new OutputEvaluator<_> with
