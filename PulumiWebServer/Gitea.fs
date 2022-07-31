@@ -15,7 +15,7 @@ type GiteaConfig =
 [<RequireQualifiedAccess>]
 module Gitea =
 
-    let writeConfig
+    let private writeConfig
         (trigger : Output<'a>)
         (subdomains : Map<WellKnownSubdomain, string>)
         (DomainName domain)
@@ -33,7 +33,7 @@ module Gitea =
 
         Command.contentAddressedCopy privateKey address "write-gitea-config" trigger "/etc/nixos/gitea.nix" giteaConfig
 
-    let loadConfig<'a>
+    let private loadConfig<'a>
         (onChange : Output<'a>)
         (PrivateKey privateKey)
         (address : Address)
@@ -75,3 +75,20 @@ module Gitea =
             writePassword
             writeGiteaUserPassword
         ]
+
+    let configure<'a>
+        (infectNixTrigger : Output<'a>)
+        (domain : DomainName)
+        (subdomains : Map<WellKnownSubdomain, string>)
+        (privateKey : PrivateKey)
+        (address : Address)
+        (config : GiteaConfig)
+        : Module
+        =
+        let writeConfig =
+            writeConfig infectNixTrigger subdomains domain privateKey address config
+
+        {
+            WriteConfigFile = writeConfig
+            EnableConfig = loadConfig writeConfig.Stdout privateKey address config
+        }

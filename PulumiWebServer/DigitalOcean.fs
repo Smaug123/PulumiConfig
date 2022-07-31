@@ -12,7 +12,7 @@ module DigitalOcean =
         args.PublicKey <- File.ReadAllText publicKey.FullName |> Input.lift
         SshKey ("default", args)
 
-    let makeNixosServer (sshKeys : Input<SshFingerprint> []) (region : Region) : Output<Droplet> =
+    let makeNixosServer (region : Region) (sshKeys : Input<SshFingerprint> []) : Output<Droplet> =
         output {
             let args =
                 DropletArgs (Name = Input.lift "nixos-server", Size = InputUnion.liftRight DropletSlug.DropletS1VCPU1GB)

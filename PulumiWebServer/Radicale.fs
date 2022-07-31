@@ -14,7 +14,7 @@ type RadicaleConfig =
 [<RequireQualifiedAccess>]
 module Radicale =
 
-    let loadConfig<'a>
+    let private loadConfig<'a>
         (onChange : Output<'a>)
         (PrivateKey privateKey as pk)
         (address : Address)
@@ -56,7 +56,7 @@ module Radicale =
 
         [ loadNix ; writePassword ]
 
-    let writeConfig
+    let private writeConfig
         (trigger : Output<'a>)
         (subdomains : Map<WellKnownSubdomain, string>)
         (DomainName domain)
@@ -76,3 +76,19 @@ module Radicale =
             trigger
             "/etc/nixos/radicale.nix"
             radicaleConfig
+
+    let configure
+        (infectNixTrigger : Output<'a>)
+        (subdomains : Map<WellKnownSubdomain, string>)
+        (domain : DomainName)
+        (privateKey : PrivateKey)
+        (address : Address)
+        (config : RadicaleConfig)
+        : Module
+        =
+        let writeConfig = writeConfig infectNixTrigger subdomains domain privateKey address
+
+        {
+            WriteConfigFile = writeConfig
+            EnableConfig = loadConfig writeConfig.Stdout privateKey address config
+        }

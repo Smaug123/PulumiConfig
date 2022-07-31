@@ -74,141 +74,116 @@ module Program =
         let privateKey = FileInfo PRIVATE_KEY |> PrivateKey
         let publicKey = FileInfo (PRIVATE_KEY + ".pub") |> PublicKey
 
-        let output =
-            fun () ->
-                output {
-                    let key = DigitalOcean.saveSshKey publicKey
+        fun () ->
+            output {
+                let key = DigitalOcean.saveSshKey publicKey
 
-                    let! keys =
-                        DigitalOcean.storedSshKeys key.Urn
-                        |> Output.map (
-                            Seq.map (fun s ->
-                                {
-                                    Fingerprint = SshFingerprint s.Fingerprint
-                                    PublicKeyContents = s.PublicKey
-                                }
-                            )
-                            >> Array.ofSeq
+                let! keys =
+                    DigitalOcean.storedSshKeys key.Urn
+                    |> Output.map (
+                        Seq.map (fun s ->
+                            {
+                                Fingerprint = SshFingerprint s.Fingerprint
+                                PublicKeyContents = s.PublicKey
+                            }
                         )
+                        >> Array.ofSeq
+                    )
 
-                    let! droplet =
-                        DigitalOcean.makeNixosServer
-                            (keys
-                             |> Array.map (SshKey.fingerprint >> Input.lift))
-                            Region.LON1
+                let! droplet =
+                    keys
+                    |> Array.map (SshKey.fingerprint >> Input.lift)
+                    |> DigitalOcean.makeNixosServer Region.LON1
 
-                    let! ipv4 = droplet.Ipv4Address
-                    let! ipv6 = droplet.Ipv6Address
+                let! ipv4 = droplet.Ipv4Address
+                let! ipv6 = droplet.Ipv6Address
 
-                    let address =
-                        {
-                            IPv4 = Option.ofObj ipv4
-                            IPv6 = Option.ofObj ipv6
-                        }
+                let address =
+                    {
+                        IPv4 = Option.ofObj ipv4
+                        IPv6 = Option.ofObj ipv6
+                    }
 
-                    let! zone = Cloudflare.getZone DOMAIN
-                    let dns = Cloudflare.addDns DOMAIN CNAMES SUBDOMAINS zone address
-                    let! _ = Server.waitForReady privateKey address
+                let! zone = Cloudflare.getZone DOMAIN
+                let dns = Cloudflare.addDns DOMAIN CNAMES SUBDOMAINS zone address
+                let! _ = Server.waitForReady privateKey address
 
-                    let infectNix = Server.infectNix privateKey address
-                    let! _ = infectNix.Stdout
+                let infectNix = Server.infectNix privateKey address
+                let! _ = infectNix.Stdout
 
-                    let nginxConfigFile =
-                        Nginx.writeConfig infectNix.Stdout nginxConfig privateKey address
+                let initialSetupModules =
+                    [
+                        Server.configureUser infectNix.Stdout REMOTE_USERNAME keys privateKey address
+                    ]
 
-                    let userConfigFile =
-                        Server.writeUserConfig infectNix.Stdout keys REMOTE_USERNAME privateKey address
-
-                    let nextCloudConfig =
-                        NextCloud.writeConfig infectNix.Stdout SUBDOMAINS DOMAIN privateKey address
-
-                    let giteaConfig =
-                        Gitea.writeConfig infectNix.Stdout SUBDOMAINS DOMAIN privateKey address GITEA_CONFIG
-
-                    let radicaleConfig =
-                        Radicale.writeConfig infectNix.Stdout SUBDOMAINS DOMAIN privateKey address
-
-                    let configFiles =
-                        [|
-                            nginxConfigFile
-                            userConfigFile
-                            nextCloudConfig
-                            giteaConfig
-                            radicaleConfig
-                        |]
-                        |> Array.map (fun s -> s.Stdout)
+                let! _ =
+                    initialSetupModules
+                    |> Seq.map (fun m -> m.WriteConfigFile.Stdout)
+                    |> Output.sequence
+                // Load the configuration
+                let! _ =
+                    initialSetupModules
+                    |> Seq.map (fun m ->
+                        m.EnableConfig
+                        |> Seq.map (fun c -> c.Stdout)
                         |> Output.sequence
+                    )
+                    |> Output.sequence
 
-                    // Wait for the config files to be written
-                    let! _ = configFiles
+                // If this is a new node, reboot
+                let firstReboot = Server.reboot "post-infect" droplet.Urn privateKey address
+                let! _ = firstReboot.Stdout
 
-                    let configureNginx = Nginx.loadConfig nginxConfigFile.Stdout privateKey address
+                // The nixos rebuild has blatted the known public key.
+                Local.forgetKey address
+                let! _ = Server.waitForReady privateKey address
 
-                    let configureUsers =
-                        Server.loadUserConfig
-                            [
-                                OutputCrate.make configureNginx.Stdout
-                            ]
-                            privateKey
-                            address
+                let modules =
+                    [
+                        Nginx.configure infectNix.Stdout privateKey address nginxConfig
+                        Gitea.configure infectNix.Stdout DOMAIN SUBDOMAINS privateKey address GITEA_CONFIG
+                        NextCloud.configure infectNix.Stdout SUBDOMAINS DOMAIN privateKey address NEXTCLOUD_CONFIG
+                        Radicale.configure infectNix.Stdout SUBDOMAINS DOMAIN privateKey address RADICALE_CONFIG
+                    ]
 
-                    let configureNextcloud =
-                        NextCloud.loadConfig configureUsers.Stdout privateKey address NEXTCLOUD_CONFIG
+                let configFiles =
+                    modules
+                    |> Seq.map (fun m -> m.WriteConfigFile.Stdout)
+                    |> Output.sequence
 
-                    let configuredNextCloud =
-                        configureNextcloud
-                        |> List.map (fun c -> c.Stdout)
+                // Wait for the config files to be written
+                let! _ = configFiles
+
+                // Load the configuration
+                let _ =
+                    modules
+                    |> Seq.map (fun m ->
+                        m.EnableConfig
+                        |> Seq.map (fun c -> c.Stdout)
                         |> Output.sequence
+                    )
+                    |> Output.sequence
 
-                    // Wait for nextcloud to be configured
-                    let! _ = configuredNextCloud
+                let deps =
+                    let dnsDeps =
+                        dns
+                        |> Map.toList
+                        |> List.collect (fun (_, record) ->
+                            match record with
+                            | DnsRecord.ARecord record -> [ record.IPv4 ; record.IPv6 ]
+                            | DnsRecord.Cname _ -> []
+                        )
+                        |> List.choose id
+                        |> List.map (fun record -> record.Urn |> OutputCrate.make)
 
-                    let configureGitea =
-                        Gitea.loadConfig giteaConfig.Stdout privateKey address GITEA_CONFIG
-                        |> List.map (fun c -> c.Stdout)
-                        |> Output.sequence
+                    OutputCrate.make (configFiles |> Output.map List.toArray)
+                    :: OutputCrate.make firstReboot.Stdout :: dnsDeps
 
-                    // Wait for Gitea to be configured
-                    let! _ = configureGitea
-
-                    let configureRadicale =
-                        Radicale.loadConfig radicaleConfig.Stdout privateKey address RADICALE_CONFIG
-                        |> List.map (fun c -> c.Stdout)
-                        |> Output.sequence
-
-                    // Wait for Radicale to be configured
-                    let! _ = configureRadicale
-
-                    // If this is a new node, reboot
-                    let firstReboot = Server.reboot "post-infect" droplet.Urn privateKey address
-
-                    let! _ = firstReboot.Stdout
-                    // The nixos rebuild has blatted the known public key.
-                    Local.forgetKey address
-                    let! _ = Server.waitForReady privateKey address
-
-                    let deps =
-                        let dnsDeps =
-                            dns
-                            |> Map.toList
-                            |> List.collect (fun (_, record) ->
-                                match record with
-                                | DnsRecord.ARecord record -> [ record.IPv4 ; record.IPv6 ]
-                                | DnsRecord.Cname _ -> []
-                            )
-                            |> List.choose id
-                            |> List.map (fun record -> record.Urn |> OutputCrate.make)
-
-                        OutputCrate.make (configFiles |> Output.map List.toArray)
-                        :: OutputCrate.make firstReboot.Stdout :: dnsDeps
-
-                    let rebuild = Server.nixRebuild deps privateKey address
-                    let! _ = rebuild.Stdout
-                    return ()
-                }
-                |> ignore
-            |> Deployment.RunAsync
-            |> Async.AwaitTask
-            |> Async.RunSynchronously
-
-        output
+                let rebuild = Server.nixRebuild deps privateKey address
+                let! _ = rebuild.Stdout
+                return ()
+            }
+            |> ignore
+        |> Deployment.RunAsync
+        |> Async.AwaitTask
+        |> Async.RunSynchronously
