@@ -20,6 +20,8 @@ jobs:
       run: dotnet restore Pulumi.sln
     - name: Build
       run: dotnet build Pulumi.sln --configuration Release --no-restore
+    - name: Test
+      run: dotnet test Pulumi.sln --configuration Release --no-restore
     - name: Install .NET global tools
       run: dotnet tool restore
     - name: Check with Fantomas
