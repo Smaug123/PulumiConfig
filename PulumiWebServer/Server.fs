@@ -55,7 +55,7 @@ module Server =
 
         Command ("nix-infect", args)
 
-    let writeUserConfig
+    let private writeUserConfig
         (trigger : Output<'a>)
         (keys : SshKey seq)
         (Username username)
@@ -83,13 +83,12 @@ module Server =
             "/etc/nixos/userconfig.nix"
             userConfig
 
-    let loadUserConfig (onChange : OutputCrate list) (PrivateKey privateKey) (address : Address) =
+    let private loadUserConfig (onChange : Output<'a>) (PrivateKey privateKey) (address : Address) =
         let args = CommandArgs ()
 
         args.Triggers <-
             onChange
-            |> OutputCrate.sequence
-            |> Output.map List.toSeq
+            |> Output.map (unbox<obj> >> Seq.singleton)
             |> InputList.ofOutput
 
         args.Connection <- Command.connection privateKey address
@@ -97,6 +96,24 @@ module Server =
         Command.addToNixFileCommand args "userconfig.nix"
 
         Command ("configure-users", args, Command.deleteBeforeReplace)
+
+    let configureUser<'a>
+        (infectNixTrigger : Output<'a>)
+        (remoteUser : Username)
+        (keys : SshKey seq)
+        (privateKey : PrivateKey)
+        (address : Address)
+        : Module
+        =
+        let writeConfig =
+            writeUserConfig infectNixTrigger keys remoteUser privateKey address
+
+        {
+            WriteConfigFile = writeConfig
+            EnableConfig =
+                loadUserConfig writeConfig.Stdout privateKey address
+                |> List.singleton
+        }
 
     let nixRebuild (onChange : OutputCrate list) (PrivateKey privateKey) (address : Address) =
         let args = CommandArgs ()

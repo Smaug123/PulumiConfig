@@ -1,6 +1,7 @@
 namespace PulumiWebServer
 
 open System.IO
+open Pulumi.Command.Remote
 
 type ZoneId = ZoneId of string
 

@@ -14,11 +14,13 @@
 
     <ItemGroup>
       <Compile Include="Domain.fs" />
+      <Compile Include="String.fs" />
       <Compile Include="Utils.fs" />
       <Compile Include="Htpasswd.fs" />
       <Compile Include="BashString.fsi" />
       <Compile Include="BashString.fs" />
       <Compile Include="Pulumi.fs" />
+      <Compile Include="Module.fs" />
       <Compile Include="Command.fs" />
       <Compile Include="Cloudflare.fs" />
       <Compile Include="DigitalOcean.fs" />

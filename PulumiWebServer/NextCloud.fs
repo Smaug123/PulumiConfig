@@ -12,7 +12,7 @@ type NextCloudConfig =
 [<RequireQualifiedAccess>]
 module NextCloud =
 
-    let writeConfig
+    let private writeConfig
         (trigger : Output<'a>)
         (subdomains : Map<WellKnownSubdomain, string>)
         (DomainName domain)
@@ -33,7 +33,7 @@ module NextCloud =
             "/etc/nixos/nextcloud.nix"
             nextCloudConfig
 
-    let loadConfig
+    let private loadConfig
         (onChange : Output<'a>)
         (PrivateKey privateKey)
         (address : Address)
@@ -74,3 +74,18 @@ module NextCloud =
             createServerPass
             createUserPass
         ]
+
+    let configure<'a>
+        (infectNixTrigger : Output<'a>)
+        (subdomains : Map<_, _>)
+        (domain : DomainName)
+        (privateKey : PrivateKey)
+        (address : Address)
+        (config : NextCloudConfig)
+        =
+        let writeConfig = writeConfig infectNixTrigger subdomains domain privateKey address
+
+        {
+            WriteConfigFile = writeConfig
+            EnableConfig = loadConfig writeConfig.Stdout privateKey address config
+        }

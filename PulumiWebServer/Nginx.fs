@@ -18,12 +18,6 @@ type NginxConfig =
 [<RequireQualifiedAccess>]
 module Nginx =
 
-    let private trimStart (s : string) (target : string) =
-        if target.StartsWith s then
-            target[s.Length ..]
-        else
-            target
-
     let private createNixConfig (config : NginxConfig) : string =
         let configTemplate =
             Utils.getEmbeddedResource "nginx.nix"
@@ -48,7 +42,7 @@ module Nginx =
 
         configTemplate.Replace ("\"@@DOMAINS@@\"", sprintf "{%s}" certConfig)
 
-    let loadConfig (onChange : Output<'a>) (PrivateKey privateKey) (address : Address) =
+    let private loadConfig (onChange : Output<'a>) (PrivateKey privateKey) (address : Address) =
         let args = CommandArgs ()
 
         args.Triggers <-
@@ -63,7 +57,7 @@ module Nginx =
 
         Command ("configure-nginx", args, Command.deleteBeforeReplace)
 
-    let writeConfig
+    let private writeConfig
         (trigger : Output<'a>)
         (nginxConfig : NginxConfig)
         (privateKey : PrivateKey)
@@ -72,3 +66,19 @@ module Nginx =
         =
         let nginx = createNixConfig nginxConfig
         Command.contentAddressedCopy privateKey address "write-nginx-config" trigger "/etc/nixos/nginx.nix" nginx
+
+    let configure<'a>
+        (infectNixTrigger : Output<'a>)
+        (privateKey : PrivateKey)
+        (address : Address)
+        (config : NginxConfig)
+        : Module
+        =
+        let writeConfig = writeConfig infectNixTrigger config privateKey address
+
+        {
+            WriteConfigFile = writeConfig
+            EnableConfig =
+                loadConfig writeConfig.Stdout privateKey address
+                |> List.singleton
+        }
