@@ -24,6 +24,7 @@ module Program =
         [
             WellKnownSubdomain.Nextcloud, "nextcloud"
             WellKnownSubdomain.Gitea, "gitea"
+            WellKnownSubdomain.Radicale, "calendar"
         ]
         |> Map.ofList
 
@@ -60,6 +61,12 @@ module Program =
             AdminPassword =
                 failwith "password for admin user within nextcloud"
                 |> BashString.make
+        }
+
+    let RADICALE_CONFIG =
+        {
+            User = failwith "Username to log in to Radicale"
+            Password = failwith "Password to log in to Radicale"
         }
 
     [<EntryPoint>]
@@ -107,16 +114,19 @@ module Program =
                     let! _ = infectNix.Stdout
 
                     let nginxConfigFile =
-                        Server.writeNginxConfig infectNix.Stdout nginxConfig privateKey address
+                        Nginx.writeConfig infectNix.Stdout nginxConfig privateKey address
 
                     let userConfigFile =
                         Server.writeUserConfig infectNix.Stdout keys REMOTE_USERNAME privateKey address
 
                     let nextCloudConfig =
-                        Server.writeNextCloudConfig infectNix.Stdout SUBDOMAINS DOMAIN privateKey address
+                        NextCloud.writeConfig infectNix.Stdout SUBDOMAINS DOMAIN privateKey address
 
                     let giteaConfig =
-                        Server.writeGiteaConfig infectNix.Stdout SUBDOMAINS DOMAIN privateKey address GITEA_CONFIG
+                        Gitea.writeConfig infectNix.Stdout SUBDOMAINS DOMAIN privateKey address GITEA_CONFIG
+
+                    let radicaleConfig =
+                        Radicale.writeConfig infectNix.Stdout SUBDOMAINS DOMAIN privateKey address
 
                     let configFiles =
                         [|
@@ -124,6 +134,7 @@ module Program =
                             userConfigFile
                             nextCloudConfig
                             giteaConfig
+                            radicaleConfig
                         |]
                         |> Array.map (fun s -> s.Stdout)
                         |> Output.sequence
@@ -131,8 +142,7 @@ module Program =
                     // Wait for the config files to be written
                     let! _ = configFiles
 
-                    let configureNginx =
-                        Server.loadNginxConfig nginxConfigFile.Stdout privateKey address
+                    let configureNginx = Nginx.loadConfig nginxConfigFile.Stdout privateKey address
 
                     let configureUsers =
                         Server.loadUserConfig
@@ -143,7 +153,7 @@ module Program =
                             address
 
                     let configureNextcloud =
-                        Server.loadNextCloudConfig configureUsers.Stdout privateKey address NEXTCLOUD_CONFIG
+                        NextCloud.loadConfig configureUsers.Stdout privateKey address NEXTCLOUD_CONFIG
 
                     let configuredNextCloud =
                         configureNextcloud
@@ -154,12 +164,20 @@ module Program =
                     let! _ = configuredNextCloud
 
                     let configureGitea =
-                        Server.loadGiteaConfig giteaConfig.Stdout privateKey address GITEA_CONFIG
+                        Gitea.loadConfig giteaConfig.Stdout privateKey address GITEA_CONFIG
                         |> List.map (fun c -> c.Stdout)
                         |> Output.sequence
 
                     // Wait for Gitea to be configured
                     let! _ = configureGitea
+
+                    let configureRadicale =
+                        Radicale.loadConfig radicaleConfig.Stdout privateKey address RADICALE_CONFIG
+                        |> List.map (fun c -> c.Stdout)
+                        |> Output.sequence
+
+                    // Wait for Radicale to be configured
+                    let! _ = configureRadicale
 
                     // If this is a new node, reboot
                     let firstReboot = Server.reboot "post-infect" droplet.Urn privateKey address

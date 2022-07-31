@@ -25,6 +25,7 @@
             pkgs.dotnet-sdk_6
             pkgs.python
             pkgs.git
+            pkgs.apacheHttpd
             alejandra.defaultPackage.${system}
           ];
           shellHook = ''

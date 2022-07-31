@@ -2,6 +2,7 @@ namespace PulumiWebServer
 
 open System.IO
 
+[<RequireQualifiedAccess>]
 module Utils =
     type private Dummy =
         class

@@ -15,20 +15,25 @@
     <ItemGroup>
       <Compile Include="Domain.fs" />
       <Compile Include="Utils.fs" />
+      <Compile Include="Htpasswd.fs" />
+      <Compile Include="BashString.fsi" />
+      <Compile Include="BashString.fs" />
       <Compile Include="Pulumi.fs" />
+      <Compile Include="Command.fs" />
       <Compile Include="Cloudflare.fs" />
       <Compile Include="DigitalOcean.fs" />
-      <Compile Include="NextCloud.fsi" />
       <Compile Include="NextCloud.fs" />
       <Compile Include="Gitea.fs" />
       <Compile Include="Nginx.fs" />
       <Compile Include="Server.fs" />
+      <Compile Include="Radicale.fs" />
       <Compile Include="Local.fs" />
       <Compile Include="Program.fs" />
-      <EmbeddedResource Include="nginx.nix" />
-      <EmbeddedResource Include="userconfig.nix" />
-      <EmbeddedResource Include="gitea.nix" />
-      <EmbeddedResource Include="nextcloud.nix" />
+      <EmbeddedResource Include="Nix\nginx.nix" />
+      <EmbeddedResource Include="Nix\userconfig.nix" />
+      <EmbeddedResource Include="Nix\gitea.nix" />
+      <EmbeddedResource Include="Nix\nextcloud.nix" />
+      <EmbeddedResource Include="Nix\radicale.nix" />
     </ItemGroup>
     
 </Project>
