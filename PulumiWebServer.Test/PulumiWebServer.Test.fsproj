@@ -6,10 +6,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <Compile Include="Utils.fs" />
-        <Compile Include="TestConfiguration.fs" />
-        <Compile Include="TestJsonSchema.fs" />
-        <EmbeddedResource Include="exampleconfig.json" />
+      <Compile Include="Utils.fs" />
+      <Compile Include="TestConfiguration.fs" />
+      <Compile Include="TestJsonSchema.fs" />
+      <EmbeddedResource Include="..\PulumiWebServer\Nix\config.json" />
     </ItemGroup>
 
     <ItemGroup>

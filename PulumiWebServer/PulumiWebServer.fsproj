@@ -1,44 +1,53 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net7.0</TargetFramework>
-        <OutputType>Exe</OutputType>
+      <TargetFramework>net7.0</TargetFramework>
+      <OutputType>Exe</OutputType>
+      <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Nager.PublicSuffix" Version="2.4.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-        <PackageReference Include="Pulumi" Version="3.37.2" />
-        <PackageReference Include="Pulumi.Cloudflare" Version="4.9.0" />
-        <PackageReference Include="Pulumi.Command" Version="0.4.1" />
-        <PackageReference Include="Pulumi.DigitalOcean" Version="4.14.0" />
+        <PackageReference Include="Pulumi" Version="3.53.0" />
+        <PackageReference Include="Pulumi.Cloudflare" Version="4.15.0" />
+        <PackageReference Include="Pulumi.Command" Version="4.5.0" />
+        <PackageReference Include="Pulumi.DigitalOcean" Version="4.16.0" />
     </ItemGroup>
 
     <ItemGroup>
       <Compile Include="Domain.fs" />
       <Compile Include="Utils.fs" />
-      <Compile Include="Htpasswd.fs" />
       <Compile Include="BashString.fsi" />
       <Compile Include="BashString.fs" />
       <Compile Include="Pulumi.fs" />
-      <Compile Include="Module.fs" />
       <Compile Include="Command.fs" />
       <Compile Include="Cloudflare.fs" />
       <Compile Include="DigitalOcean.fs" />
       <Compile Include="Nginx.fs" />
       <Compile Include="Server.fs" />
-      <Compile Include="Gitea.fs" />
-      <Compile Include="Radicale.fs" />
       <Compile Include="Local.fs" />
       <Compile Include="Configuration.fs" />
       <Compile Include="Program.fs" />
-      <EmbeddedResource Include="Nix\nginx.nix" />
-      <EmbeddedResource Include="Nix\userconfig.nix" />
-      <EmbeddedResource Include="Nix\gitea.nix" />
-      <EmbeddedResource Include="Nix\radicale.nix" />
-      <EmbeddedResource Include="Nix\flake.nix" />
-      <EmbeddedResource Include="Nix\flake.lock" />
+      <None Include="Nix\nginx-config.nix" />
+      <None Include="Nix\userconfig.nix" />
+      <None Include="Nix\gitea-config.nix" />
+      <None Include="Nix\radicale-config.nix" />
+      <None Include="Nix\sops.nix" />
+      <None Include="Nix\flake.nix" />
+      <None Include="Nix\flake.lock" />
+      <None Include="Nix\configuration.nix" />
+      <None Include="Nix\hardware-configuration.nix" />
+      <None Include="Nix\networking.nix" />
+      <None Include="Nix\radicale\githook.sh" />
+      <None Include="Nix\radicale\.gitignore" />
+      <Content Include="Nix\gitea\add-user.sh" />
+      <Content Include="Nix\config.json" />
+      <Content Include="Nix\ssh-keys.json" />
       <Content Include="config.schema.json" />
+      <Content Include="waitforready.sh">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
     
 </Project>

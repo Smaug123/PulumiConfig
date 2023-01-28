@@ -22,6 +22,16 @@
     sha256 = "0r535cw9ikm8xmyla6ah7qx3hb7nvz5m9fi0dqgbkd3wsrc8jlpl";
   })
   (fetchNuGet {
+    pname = "Grpc.AspNetCore.Server";
+    version = "2.37.0";
+    sha256 = "1wkdkfawdm5znhzwp21jwhs1hml08ks3308ak7zbf1f902jb9cad";
+  })
+  (fetchNuGet {
+    pname = "Grpc.Core.Api";
+    version = "2.37.0";
+    sha256 = "17fmhlkjn7r6jc448p3rlnqi528rpzxgdh3j9h0qmn0m1m3r19ar";
+  })
+  (fetchNuGet {
     pname = "Grpc.Core.Api";
     version = "2.43.0";
     sha256 = "0aywd270inzfy3nizdvz7z1c083m11xfd76016q0c9sbmwrhv20j";
@@ -30,6 +40,11 @@
     pname = "Grpc.Net.Client";
     version = "2.43.0";
     sha256 = "1yxm894lpn5sg6xg7i5ldd9bh7xg2s2c6xsx0yf7zrachy1bqbar";
+  })
+  (fetchNuGet {
+    pname = "Grpc.Net.Common";
+    version = "2.37.0";
+    sha256 = "1n15hmp5rzhpbrg8c36bd7n086dm3mgqimf6k601f78bbcym8c9r";
   })
   (fetchNuGet {
     pname = "Grpc.Net.Common";
@@ -173,23 +188,23 @@
   })
   (fetchNuGet {
     pname = "Pulumi";
-    version = "3.37.2";
-    sha256 = "0szsw6yyvanp69yaa5cysx9m7ixn62djvk8jf68zlgrm2gngk7lr";
+    version = "3.53.0";
+    sha256 = "0lalidv5kbn668h4517pgzv6di6x9i9ki1xi9fabbq2p9middwpj";
   })
   (fetchNuGet {
     pname = "Pulumi.Cloudflare";
-    version = "4.9.0";
-    sha256 = "1wqa059wbqzd26jn9v1rjyq70h7ypvcx549l3g1vva4b0nc699dx";
+    version = "4.15.0";
+    sha256 = "12wyz0slxgwwfk9ns322xgzqnix5mpx9nrmhs6rw2ssysf3jviv6";
   })
   (fetchNuGet {
     pname = "Pulumi.Command";
-    version = "0.4.1";
-    sha256 = "0d6k8y2r0s6d0qjq4h6ixy6sz8lilbfpgbimk9wg8vv8drlbb2h9";
+    version = "4.5.0";
+    sha256 = "01m3ap6prkkq8kaqdhjcs7m5ww7jb50vybadgx26381njgf24pk0";
   })
   (fetchNuGet {
     pname = "Pulumi.DigitalOcean";
-    version = "4.14.0";
-    sha256 = "17cd86nvhhcqaznz2g386fwj1vdzbqvm84x8wzqp5g1r7rdadbb3";
+    version = "4.16.0";
+    sha256 = "16xid3lv884csv1n4w3k0s9cqaikcbrpfavrp59c9aqc4l13a9v8";
   })
   (fetchNuGet {
     pname = "Pulumi.Protobuf";

@@ -6,9 +6,9 @@
   "required": [
     "name",
     "privateKey",
-    "acmeEmail",
     "domain",
     "cnames",
+    "acmeEmail",
     "remoteUsername"
   ],
   "properties": {
@@ -19,9 +19,6 @@
       "type": "string"
     },
     "publicKey": {
-      "type": "string"
-    },
-    "acmeEmail": {
       "type": "string"
     },
     "domain": {
@@ -39,76 +36,11 @@
         "type": "string"
       }
     },
-    "remoteUsername": {
+    "acmeEmail": {
       "type": "string"
     },
-    "giteaConfig": {
-      "oneOf": [
-        {
-          "type": "null"
-        },
-        {
-          "$ref": "#/definitions/SerialisedGiteaConfig"
-        }
-      ]
-    },
-    "radicaleConfig": {
-      "oneOf": [
-        {
-          "type": "null"
-        },
-        {
-          "$ref": "#/definitions/SerialisedRadicaleConfig"
-        }
-      ]
-    }
-  },
-  "definitions": {
-    "SerialisedGiteaConfig": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "serverPassword",
-        "adminPassword",
-        "adminUsername",
-        "adminEmailAddress"
-      ],
-      "properties": {
-        "serverPassword": {
-          "type": "string"
-        },
-        "adminPassword": {
-          "type": "string"
-        },
-        "adminUsername": {
-          "type": "string"
-        },
-        "adminEmailAddress": {
-          "type": "string"
-        }
-      }
-    },
-    "SerialisedRadicaleConfig": {
-      "type": "object",
-      "additionalProperties": false,
-      "required": [
-        "user",
-        "password"
-      ],
-      "properties": {
-        "user": {
-          "type": "string"
-        },
-        "password": {
-          "type": "string"
-        },
-        "gitEmail": {
-          "type": [
-            "null",
-            "string"
-          ]
-        }
-      }
+    "remoteUsername": {
+      "type": "string"
     }
   }
 }

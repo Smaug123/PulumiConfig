@@ -1,5 +1,5 @@
 config:
   cloudflare:apiToken:
-    secure: AAABAOaQPcYG4jCFbYYr6r0dqR2f5csiAulm+GGu6EZeR1pVgqoVKUOHK3hmlW+FYUcXvnhs9Rpd9tQ15dIkplJdOp/2CEgv
+    secure: AAABAFoVHnndh0tY+1jL4Z/Qml8Fy4R+RrU27w4OeWW44KoaJXSX9M4q55uqfArR2/rZZEGdJXkQoY7mluyFut5zAusuHrlX
   digitalocean:token:
-    secure: AAABAAnqEO15oRMrB/9nBZaz+9ZLqo+OLz0k23QQFCS8eFgM45sGrUQIPoeCSWJ/tq+AThr8wjhe3qU6PJWxRD+zpLSHS2E/y+EH1o9WyPCi0eXeFY3uttp5ToDiVbCDiyCNVtUBwQ==
+    secure: "AAABAGLyJqwR7IgpT6/7WO000SlkpsVXOX/McSOFjIGvhyfwCnGlsDlj8XUJqU+CPOzEpVtO85X/9ONno9LHGhUJtLVWcK5yhl8+/kyyGK4uii+ifImoa180nsXa/H2XCl8KjllNjw=="
