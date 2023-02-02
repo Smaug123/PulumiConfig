@@ -1,0 +1,9 @@
+{
+  "name": "servername",
+  "privateKey": "/path/to/.ssh/id_ed25519",
+  "domain": "my.domain.example.com",
+  "cnames": {"www": "root"},
+  "subdomains": ["gitea", "calendar"],
+  "acmeEmail": "me@example.com",
+  "remoteUsername": "myself"
+}

@@ -23,8 +23,7 @@ module TestSchema =
 
         let schema = JsonSchema.FromJsonAsync(File.ReadAllText schemaFile.FullName).Result
 
-        let json =
-            Utils.getEmbeddedResource typeof<Utils.Dummy>.Assembly "exampleconfig.json"
+        let json = Utils.getEmbeddedResource typeof<Utils.Dummy>.Assembly "config.json"
 
         let validator = JsonSchemaValidator ()
         let errors = validator.Validate (json, schema)
@@ -33,8 +32,7 @@ module TestSchema =
 
     [<Test>]
     let ``Example can be loaded`` () =
-        let config =
-            Utils.getEmbeddedResource typeof<Utils.Dummy>.Assembly "exampleconfig.json"
+        let config = Utils.getEmbeddedResource typeof<Utils.Dummy>.Assembly "config.json"
 
         use stream = new MemoryStream ()
 

@@ -1,0 +1,9 @@
+keys:
+  - &patrick "age1uswp3m453z9vuvqcxcu5a7pnyu7l3vc09q6j99jywc08kag2r30qxk6254"
+  - &staging_server 'age1rg6ngrc38wj8239al0v737lgfgyf6s8rse02jk3z4cjqzhx0g5jq4xv784'
+creation_rules:
+  - path_regex: "secrets/[^/]+\\.json$"
+    key_groups:
+    - age:
+      - *staging_server
+      - *patrick

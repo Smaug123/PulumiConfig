@@ -45,7 +45,7 @@
             flags = [];
             runtimeIds = map (system: pkgs.dotnetCorePackages.systemToDotnetRid system) dotnet-sdk.meta.platforms;
           in
-            pkgs.writeShellScript "fetch-${pname}-deps" (builtins.readFile (pkgs.substituteAll {
+            pkgs.writeShellScriptBin "fetch-${pname}-deps" (builtins.readFile (pkgs.substituteAll {
               src = ./nix/fetchDeps.sh;
               pname = pname;
               binPath = pkgs.lib.makeBinPath [pkgs.coreutils dotnet-sdk (pkgs.nuget-to-nix.override {inherit dotnet-sdk;})];
@@ -78,7 +78,11 @@
               [
                 pkgs.pulumi-bin
                 pkgs.apacheHttpd
-                pkgs.python
+                pkgs.sops
+                pkgs.age
+                pkgs.ssh-to-age
+                pkgs.nixos-rebuild
+                pkgs.gnused
               ]
               ++ requirements;
             shellHook = ''

@@ -5,17 +5,20 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    sops.url = "github:Mic92/sops-nix";
   };
 
   outputs = {
     self,
     nixpkgs,
+    sops,
     home-manager,
-  }: {
-    nixosConfigurations.nixos-server = nixpkgs.lib.nixosSystem {
+  } @ inputs: {
+    nixosConfigurations.default = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       modules = [
-        ./configuration.nix
+        (import ./configuration.nix (inputs // {inherit inputs;}))
+        sops.nixosModules.sops
       ];
     };
     nix.registry.nixpkgs.flake = nixpkgs;
