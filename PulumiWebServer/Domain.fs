@@ -97,18 +97,24 @@ type WellKnownSubdomain =
     | Nextcloud
     | Gitea
     | Radicale
+    | Rss
+    | Woodpecker
 
     override this.ToString () =
         match this with
         | Nextcloud -> "nextcloud"
         | Gitea -> "gitea"
         | Radicale -> "calendar"
+        | Rss -> "rss"
+        | Woodpecker -> "woodpecker"
 
     static member Parse (s : string) =
         match s with
         | "nextcloud" -> WellKnownSubdomain.Nextcloud
         | "gitea" -> WellKnownSubdomain.Gitea
         | "calendar" -> WellKnownSubdomain.Radicale
+        | "rss" -> WellKnownSubdomain.Rss
+        | "woodpecker" -> WellKnownSubdomain.Woodpecker
         | _ -> failwith $"Failed to deserialise: {s}"
 
 

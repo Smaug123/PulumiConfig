@@ -7,8 +7,10 @@ in {
     ./sops.nix
     ./radicale-config.nix
     ./gitea-config.nix
+    ./miniflux.nix
     ./userconfig.nix
     ./nginx-config.nix
+    ./woodpecker.nix
     # generated at runtime by nixos-infect and copied here
     ./hardware-configuration.nix
     ./networking.nix
@@ -25,12 +27,18 @@ in {
   services.nginx-config.staging = true;
   services.gitea-config.subdomain = "gitea";
   services.gitea-config.domain = userConfig.domain;
+  services.miniflux-config.subdomain = "rss";
+  services.miniflux-config.domain = userConfig.domain;
+  services.woodpecker-config.domain = userConfig.domain;
 
   system.stateVersion = "23.05";
 
-  boot.cleanTmpDir = true;
+  boot.tmp.cleanOnBoot = true;
   zramSwap.enable = true;
   networking.hostName = userConfig.name;
   services.openssh.enable = true;
   users.users.root.openssh.authorizedKeys.keys = sshKeys;
+
+  virtualisation.docker.enable = true;
+  users.extraGroups.docker.members = [userConfig.remoteUsername];
 }

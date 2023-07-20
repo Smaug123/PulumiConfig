@@ -1,17 +1,18 @@
 #!/bin/sh
 
-# e.g. foo.bar.com (i.e. the hostname in DNS)
-# TODO: get this with `jq` from config file
-DOMAIN="$1"
 # e.g. `PulumiWebServer/Nix`, the directory holding the Nix flake that you want on the remote machine.
 # Appropriate `networking.nix`, `hardware-configuration.nix`, and `ssh-keys.json` files, as output
 # by the `pulumi up` command, will end up written to this folder.
-NIX_FLAKE="$2"
+NIX_FLAKE="$1"
 
 if [ ! -d "$NIX_FLAKE" ]; then
     echo "Flake directory $NIX_FLAKE does not exist; aborting" 1>&2
     exit 1
 fi
+
+DOMAIN="$(jq -r .domain "$1/config.json")"
+
+echo "Domain: $DOMAIN"
 
 # TODO this somehow failed to find the right key
 AGE_KEY="$(ssh-keyscan "$DOMAIN" | ssh-to-age | tail -1 2>/dev/null)"

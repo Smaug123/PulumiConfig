@@ -27,6 +27,12 @@
       openssh.authorizedKeys.keys = config.services.userconfig.sshKeys;
     };
 
+    users.users."miniflux" = {
+      isSystemUser = true;
+      group = "miniflux";
+    };
+    users.groups."miniflux" = {};
+
     security.sudo = {
       enable = true;
       extraRules = [

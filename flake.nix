@@ -71,7 +71,7 @@
           };
         };
         devShells = let
-          requirements = [pkgs.dotnet-sdk_7 pkgs.git pkgs.alejandra pkgs.nodePackages.markdown-link-check];
+          requirements = [pkgs.dotnet-sdk_7 pkgs.git pkgs.alejandra pkgs.nodePackages.markdown-link-check pkgs.jq];
         in {
           default = pkgs.mkShell {
             buildInputs =
