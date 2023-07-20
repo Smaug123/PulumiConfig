@@ -34,11 +34,8 @@
         type = "postgres";
         passwordFile = "/run/secrets/gitea_server_password";
       };
-      domain = "${config.services.gitea-config.subdomain}.${config.services.gitea-config.domain}";
-      rootUrl = "https://${config.services.gitea-config.subdomain}.${config.services.gitea-config.domain}/";
-      httpPort = config.services.gitea-config.port;
       settings = let
-        docutils = pkgs.python37.withPackages (ps:
+        docutils = pkgs.python311.withPackages (ps:
           with ps; [
             docutils
             pygments
@@ -48,10 +45,18 @@
           ENABLED = true;
           FROM = "gitea@" + config.services.gitea-config.domain;
         };
+        server = {
+          ROOT_URL = "https://${config.services.gitea-config.subdomain}.${config.services.gitea-config.domain}/";
+          HTTP_PORT = config.services.gitea-config.port;
+          DOMAIN = "${config.services.gitea-config.subdomain}.${config.services.gitea-config.domain}";
+        };
         service = {
           REGISTER_EMAIL_CONFIRM = true;
           DISABLE_REGISTRATION = true;
           COOKIE_SECURE = true;
+        };
+        webhook = {
+          ALLOWED_HOST_LIST = "external,loopback";
         };
         "markup.restructuredtext" = {
           ENABLED = true;
