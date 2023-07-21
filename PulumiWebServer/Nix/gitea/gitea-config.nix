@@ -92,7 +92,7 @@
       description = "gitea-add-user";
       wantedBy = ["multi-user.target"];
       path = [pkgs.gitea];
-      script = builtins.readFile ./gitea/add-user.sh;
+      script = builtins.readFile ./add-user.sh;
       serviceConfig = {
         Restart = "no";
         Type = "oneshot";

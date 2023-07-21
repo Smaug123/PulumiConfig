@@ -33,7 +33,7 @@
 
   config.environment.etc = {
     "woodpecker.yaml" = {
-      text = builtins.replaceStrings ["%%WOODPECKER_PORT%%" "%%WOODPECKER_SUBDOMAIN%%" "%%WOODPECKER_DOMAIN%%" "%%GITEA_SUBDOMAIN%%"] [(toString config.services.woodpecker-config.port) config.services.woodpecker-config.subdomain config.services.woodpecker-config.domain config.services.gitea-config.subdomain] (builtins.readFile ./woodpecker/compose.yaml);
+      text = builtins.replaceStrings ["%%WOODPECKER_PORT%%" "%%WOODPECKER_SUBDOMAIN%%" "%%WOODPECKER_DOMAIN%%" "%%GITEA_SUBDOMAIN%%"] [(toString config.services.woodpecker-config.port) config.services.woodpecker-config.subdomain config.services.woodpecker-config.domain config.services.gitea-config.subdomain] (builtins.readFile ./compose.yaml);
       mode = "0440";
       user = "woodpecker";
     };
@@ -43,7 +43,7 @@
     description = "start-woodpecker";
     wantedBy = ["multi-user.target"];
     path = [pkgs.docker];
-    script = builtins.readFile ./woodpecker/start.sh;
+    script = builtins.readFile ./start.sh;
     serviceConfig = {
       Restart = "on-failure";
       Type = "exec";
