@@ -5,12 +5,14 @@
 in {
   imports = [
     ./sops.nix
-    ./radicale-config.nix
-    ./gitea-config.nix
-    ./miniflux.nix
+    ./radicale/radicale-config.nix
+    ./gitea/gitea-config.nix
+    ./miniflux/miniflux.nix
     ./userconfig.nix
-    ./nginx-config.nix
-    ./woodpecker.nix
+    ./nginx/nginx-config.nix
+    ./woodpecker/woodpecker.nix
+    ./prometheus/prometheus.nix
+    ./grafana/grafana.nix
     # generated at runtime by nixos-infect and copied here
     ./hardware-configuration.nix
     ./networking.nix
@@ -30,6 +32,7 @@ in {
   services.miniflux-config.subdomain = "rss";
   services.miniflux-config.domain = userConfig.domain;
   services.woodpecker-config.domain = userConfig.domain;
+  services.grafana-config.domain = userConfig.domain;
 
   system.stateVersion = "23.05";
 

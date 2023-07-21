@@ -99,6 +99,7 @@ type WellKnownSubdomain =
     | Radicale
     | Rss
     | Woodpecker
+    | Grafana
 
     override this.ToString () =
         match this with
@@ -106,6 +107,7 @@ type WellKnownSubdomain =
         | Gitea -> "gitea"
         | Radicale -> "calendar"
         | Rss -> "rss"
+        | Grafana -> "grafana"
         | Woodpecker -> "woodpecker"
 
     static member Parse (s : string) =
@@ -115,6 +117,7 @@ type WellKnownSubdomain =
         | "calendar" -> WellKnownSubdomain.Radicale
         | "rss" -> WellKnownSubdomain.Rss
         | "woodpecker" -> WellKnownSubdomain.Woodpecker
+        | "grafana" -> WellKnownSubdomain.Grafana
         | _ -> failwith $"Failed to deserialise: {s}"
 
 

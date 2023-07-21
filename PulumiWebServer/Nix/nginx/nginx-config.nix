@@ -53,6 +53,7 @@
       recommendedTlsSettings = true;
       recommendedOptimisation = true;
       recommendedGzipSettings = true;
+      recommendedProxySettings = true;
 
       virtualHosts."${config.services.nginx-config.domain}" = {
         globalRedirect = "${config.services.nginx-config.webrootSubdomain}.${config.services.nginx-config.domain}";

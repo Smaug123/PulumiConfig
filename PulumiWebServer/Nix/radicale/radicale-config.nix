@@ -46,7 +46,7 @@
           if config.services.radicale-config.enableGit
           then {
             filesystem_folder = filesystem_folder;
-            hook = "GIT=${pkgs.git}/bin/git GITIGNORE=${./radicale/.gitignore} /bin/sh ${./radicale/githook.sh}";
+            hook = "GIT=${pkgs.git}/bin/git GITIGNORE=${./.gitignore} /bin/sh ${./githook.sh}";
           }
           else {};
       };

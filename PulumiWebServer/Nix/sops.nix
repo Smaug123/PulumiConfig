@@ -16,5 +16,7 @@
     "radicale_password" = {owner = "radicale";};
     "radicale_git_email" = {owner = "radicale";};
     "miniflux_admin_password" = {owner = "miniflux";};
+    "grafana_admin_password" = {owner = "grafana";};
+    "grafana_secret_key" = {owner = "grafana";};
   };
 }

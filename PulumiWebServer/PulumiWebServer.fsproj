@@ -29,10 +29,7 @@
       <Compile Include="Local.fs" />
       <Compile Include="Configuration.fs" />
       <Compile Include="Program.fs" />
-      <None Include="Nix\nginx-config.nix" />
       <None Include="Nix\userconfig.nix" />
-      <None Include="Nix\gitea-config.nix" />
-      <None Include="Nix\radicale-config.nix" />
       <None Include="Nix\sops.nix" />
       <None Include="Nix\flake.nix" />
       <None Include="Nix\flake.lock" />
@@ -41,13 +38,18 @@
       <None Include="Nix\networking.nix" />
       <None Include="Nix\radicale\githook.sh" />
       <None Include="Nix\radicale\.gitignore" />
+      <None Include="Nix\radicale\radicale-config.nix" />
       <Content Include="Nix\gitea\add-user.sh" />
+      <None Include="Nix\gitea\gitea-config.nix" />
       <Content Include="Nix\config.json" />
       <Content Include="Nix\ssh-keys.json" />
-      <Content Include="Nix\miniflux.nix" />
-      <Content Include="Nix\woodpecker.nix" />
       <Content Include="Nix\woodpecker\compose.yaml" />
       <Content Include="Nix\woodpecker\start.sh" />
+      <Content Include="Nix\woodpecker\woodpecker.nix" />
+      <Content Include="Nix\grafana\grafana.nix" />
+      <Content Include="Nix\prometheus\prometheus.nix" />
+      <Content Include="Nix\miniflux\miniflux.nix" />
+      <None Include="Nix\nginx\nginx-config.nix" />
       <Content Include="config.schema.json" />
       <Content Include="waitforready.sh">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
