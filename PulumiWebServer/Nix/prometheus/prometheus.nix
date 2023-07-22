@@ -20,6 +20,11 @@
   };
 
   config = {
+    # For the domain exporter
+    environment.etc."domain-exporter/domains.yaml" = {
+      source = builtins.replaceStrings ["%%DOMAINS%%"] ["patrickstevens.co.uk"] ./domains.yaml;
+    };
+
     services.prometheus = {
       enable = true;
       port = config.services.prometheus-config.port;
@@ -29,6 +34,13 @@
           enabledCollectors = ["systemd"];
           port = config.services.prometheus-config.node-exporter-port;
         };
+        nginx = {
+          enable = true;
+        };
+        domain = {
+          enable = true;
+          extraFlags = ["--config=/etc/domain-exporter/domains.yaml"];
+        };
       };
 
       scrapeConfigs = [
@@ -37,6 +49,24 @@
           static_configs = [
             {
               targets = ["localhost:${toString config.services.prometheus.exporters.node.port}"];
+            }
+          ];
+        }
+        {
+          job_name = "nginx";
+          static_configs = [
+            {
+              # Non-configurable magic port used for nginx status
+              targets = ["localhost:9113"];
+            }
+          ];
+        }
+        {
+          job_name = "domain";
+          static_configs = [
+            {
+              # Non-configurable magic port used for domain exporter
+              targets = ["localhost:9222"];
             }
           ];
         }
