@@ -34,6 +34,13 @@
       };
     };
 
+    environment.etc."grafana-dashboards/node.json" = {
+      source = ./node.json;
+      group = "grafana";
+      user = "grafana";
+      mode = "0440";
+    };
+
     services.grafana = {
       enable = true;
       settings = {
@@ -65,6 +72,17 @@
                 type = "prometheus";
                 url = "http://127.0.0.1:${toString config.services.prometheus-config.port}";
                 access = "proxy";
+              }
+            ];
+          };
+        };
+        dashboards = {
+          settings = {
+            apiVersion = 1;
+            providers = [
+              {
+                name = "default";
+                options.path = "/etc/grafana-dashboards";
               }
             ];
           };
