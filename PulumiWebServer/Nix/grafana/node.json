@@ -18,7 +18,6 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 1,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -27,7 +26,6 @@
         "type": "prometheus",
         "uid": "P40645DF18AF953B4"
       },
-      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -76,7 +74,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "d"
         },
         "overrides": []
       },
@@ -86,7 +85,7 @@
         "x": 0,
         "y": 0
       },
-      "id": 5,
+      "id": 10,
       "options": {
         "legend": {
           "calcs": [],
@@ -106,15 +105,13 @@
             "uid": "P40645DF18AF953B4"
           },
           "editorMode": "builder",
-          "exemplar": false,
-          "expr": "rate(node_cpu_seconds_total{mode!=\"idle\"}[5m])",
-          "hide": false,
-          "legendFormat": "{{mode}}",
+          "expr": "domain_expiry_days",
+          "legendFormat": "{{domain}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "CPU usage",
+      "title": "Domain expiry time",
       "type": "timeseries"
     },
     {
@@ -263,8 +260,6 @@
             }
           },
           "mappings": [],
-          "max": 1,
-          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -278,7 +273,7 @@
               }
             ]
           },
-          "unit": "percentunit"
+          "unit": "none"
         },
         "overrides": []
       },
@@ -288,7 +283,7 @@
         "x": 0,
         "y": 8
       },
-      "id": 7,
+      "id": 9,
       "options": {
         "legend": {
           "calcs": [],
@@ -308,26 +303,13 @@
             "uid": "P40645DF18AF953B4"
           },
           "editorMode": "builder",
-          "expr": "node_filesystem_free_bytes / node_filesystem_size_bytes{job=\"node\"}",
-          "hide": false,
-          "legendFormat": "{{mountpoint}} ({{device}})",
+          "expr": "rate(nginx_http_requests_total[5m])",
+          "legendFormat": "{{instance}}",
           "range": true,
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "P40645DF18AF953B4"
-          },
-          "editorMode": "builder",
-          "expr": "node_filesystem_size_bytes{job=\"node\"}",
-          "hide": true,
-          "legendFormat": "{{mountpoint}} ({{device}})",
-          "range": true,
-          "refId": "B"
         }
       ],
-      "title": "Free disk",
+      "title": "Nginx HTTP requests/5min",
       "type": "timeseries"
     },
     {
@@ -424,6 +406,209 @@
     },
     {
       "datasource": {
+        "type": "prometheus",
+        "uid": "P40645DF18AF953B4"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P40645DF18AF953B4"
+          },
+          "editorMode": "builder",
+          "exemplar": false,
+          "expr": "rate(node_cpu_seconds_total{mode!=\"idle\"}[5m])",
+          "hide": false,
+          "legendFormat": "{{mode}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "CPU usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "P40645DF18AF953B4"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "max": 1,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P40645DF18AF953B4"
+          },
+          "editorMode": "builder",
+          "expr": "node_filesystem_free_bytes / node_filesystem_size_bytes{job=\"node\"}",
+          "hide": false,
+          "legendFormat": "{{mountpoint}} ({{device}})",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P40645DF18AF953B4"
+          },
+          "editorMode": "builder",
+          "expr": "node_filesystem_size_bytes{job=\"node\"}",
+          "hide": true,
+          "legendFormat": "{{mountpoint}} ({{device}})",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Free disk",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
         "type": "datasource",
         "uid": "grafana"
       },
@@ -431,7 +616,7 @@
         "h": 3,
         "w": 24,
         "x": 0,
-        "y": 16
+        "y": 24
       },
       "id": 1,
       "targets": [
@@ -454,7 +639,7 @@
         "h": 15,
         "w": 12,
         "x": 0,
-        "y": 19
+        "y": 27
       },
       "id": 3,
       "links": [],
@@ -491,7 +676,7 @@
         "h": 15,
         "w": 12,
         "x": 12,
-        "y": 19
+        "y": 27
       },
       "id": 4,
       "links": [],
@@ -512,7 +697,7 @@
       "type": "news"
     }
   ],
-  "refresh": "",
+  "refresh": false,
   "schemaVersion": 38,
   "style": "dark",
   "tags": [],
@@ -520,8 +705,8 @@
     "list": []
   },
   "time": {
-    "from": "now-12h",
-    "to": "now"
+    "from": "2023-07-22T01:55:10.667Z",
+    "to": "2023-07-23T01:55:10.667Z"
   },
   "timepicker": {
     "hidden": true,
@@ -553,6 +738,6 @@
   "timezone": "browser",
   "title": "Node",
   "uid": "d872af8a-0e64-4b22-8d97-7db77958960b",
-  "version": 3,
+  "version": 1,
   "weekStart": ""
 }
