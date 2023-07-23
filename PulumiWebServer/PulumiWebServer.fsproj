@@ -46,6 +46,7 @@
       <Content Include="Nix\woodpecker\compose.yaml" />
       <Content Include="Nix\woodpecker\start.sh" />
       <Content Include="Nix\woodpecker\woodpecker.nix" />
+      <Content Include="Nix\woodpecker\stop.sh" />
       <Content Include="Nix\grafana\grafana.nix" />
       <Content Include="Nix\grafana\node.json" />
       <Content Include="Nix\prometheus\prometheus.nix" />
