@@ -33,6 +33,7 @@ in {
   services.miniflux-config.domain = userConfig.domain;
   services.woodpecker-config.domain = userConfig.domain;
   services.grafana-config.domain = userConfig.domain;
+  services.prometheus-config.domain-exporter-domains = userConfig.domain;
 
   system.stateVersion = "23.05";
 

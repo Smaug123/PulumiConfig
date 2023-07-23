@@ -16,13 +16,18 @@
         description = lib.mdDoc "Localhost port for node exporter";
         default = 9003;
       };
+      domain-exporter-domains = lib.mkOption {
+        type = lib.types.string;
+        description = lib.mdDoc "Paths to be interpolated into the domain-exporter config. To specify multiple, you'll have to give the JSON string delimiter and comma yourself.";
+        example = "example.com";
+      };
     };
   };
 
   config = {
     # For the domain exporter
     environment.etc."domain-exporter/domains.yaml" = {
-      source = builtins.replaceStrings ["%%DOMAINS%%"] ["patrickstevens.co.uk"] ./domains.yaml;
+      text = builtins.replaceStrings ["%%DOMAINS%%"] [config.services.prometheus-config.domain-exporter-domains] (builtins.readFile ./domains.yaml);
     };
 
     services.prometheus = {

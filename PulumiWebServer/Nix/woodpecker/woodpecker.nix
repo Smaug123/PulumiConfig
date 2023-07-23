@@ -44,6 +44,7 @@
     wantedBy = ["multi-user.target"];
     path = [pkgs.docker];
     script = builtins.readFile ./start.sh;
+    preStop = builtins.readFile ./stop.sh;
     serviceConfig = {
       Restart = "on-failure";
       Type = "exec";
