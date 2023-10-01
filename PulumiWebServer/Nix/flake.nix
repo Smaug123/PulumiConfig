@@ -18,7 +18,9 @@
     sops,
     home-manager,
     website,
-  } @ inputs: let system = "x86_64-linux"; in {
+  } @ inputs: let
+    system = "x86_64-linux";
+  in {
     nixosConfigurations.default = nixpkgs.lib.nixosSystem {
       inherit system;
       specialArgs = {

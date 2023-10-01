@@ -1,4 +1,8 @@
-{nixpkgs, website, ...}: let
+{
+  nixpkgs,
+  website,
+  ...
+}: let
   lib = nixpkgs.lib;
   # TODO: how can I get this passed in?
   pkgs = nixpkgs.legacyPackages."x86_64-linux";
@@ -44,14 +48,14 @@ in {
 
   nix = {
     settings = {
-    auto-optimise-store = true;
-    experimental-features = ["nix-command" "flakes"];
+      auto-optimise-store = true;
+      experimental-features = ["nix-command" "flakes"];
     };
     package = pkgs.nixUnstable;
-    extraOptions= ''
+    extraOptions = ''
       experimental-features = ca-derivations
     '';
-   };
+  };
 
   boot.tmp.cleanOnBoot = true;
   zramSwap.enable = true;
@@ -62,10 +66,12 @@ in {
   virtualisation.docker.enable = true;
   users.extraGroups.docker.members = [userConfig.remoteUsername];
 
-  security.pam.loginLimits = [{
-    domain = "*";
-    type = "soft";
-    item = "nofile";
-    value = "8192";
-  }];
+  security.pam.loginLimits = [
+    {
+      domain = "*";
+      type = "soft";
+      item = "nofile";
+      value = "8192";
+    }
+  ];
 }
