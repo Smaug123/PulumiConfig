@@ -62,6 +62,7 @@
             }
           },
           "mappings": [],
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -75,7 +76,7 @@
               }
             ]
           },
-          "unit": "d"
+          "unit": "none"
         },
         "overrides": []
       },
@@ -85,7 +86,7 @@
         "x": 0,
         "y": 0
       },
-      "id": 10,
+      "id": 11,
       "options": {
         "legend": {
           "calcs": [],
@@ -105,13 +106,14 @@
             "uid": "P40645DF18AF953B4"
           },
           "editorMode": "builder",
-          "expr": "domain_expiry_days",
-          "legendFormat": "{{domain}}",
+          "expr": "sum by(state) (node_systemd_unit_state)",
+          "instant": false,
+          "legendFormat": "{{state}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Domain expiry time",
+      "title": "Systemd state",
       "type": "timeseries"
     },
     {
@@ -234,6 +236,8 @@
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
+            "axisSoftMax": 3650,
+            "axisSoftMin": 0,
             "barAlignment": 0,
             "drawStyle": "line",
             "fillOpacity": 0,
@@ -273,7 +277,7 @@
               }
             ]
           },
-          "unit": "none"
+          "unit": "d"
         },
         "overrides": []
       },
@@ -283,7 +287,7 @@
         "x": 0,
         "y": 8
       },
-      "id": 9,
+      "id": 10,
       "options": {
         "legend": {
           "calcs": [],
@@ -303,13 +307,13 @@
             "uid": "P40645DF18AF953B4"
           },
           "editorMode": "builder",
-          "expr": "rate(nginx_http_requests_total[5m])",
-          "legendFormat": "{{instance}}",
+          "expr": "domain_expiry_days",
+          "legendFormat": "{{domain}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Nginx HTTP requests/5min",
+      "title": "Domain expiry time",
       "type": "timeseries"
     },
     {
@@ -409,7 +413,6 @@
         "type": "prometheus",
         "uid": "P40645DF18AF953B4"
       },
-      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -458,7 +461,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "none"
         },
         "overrides": []
       },
@@ -468,7 +472,7 @@
         "x": 0,
         "y": 16
       },
-      "id": 5,
+      "id": 9,
       "options": {
         "legend": {
           "calcs": [],
@@ -488,15 +492,13 @@
             "uid": "P40645DF18AF953B4"
           },
           "editorMode": "builder",
-          "exemplar": false,
-          "expr": "rate(node_cpu_seconds_total{mode!=\"idle\"}[5m])",
-          "hide": false,
-          "legendFormat": "{{mode}}",
+          "expr": "rate(nginx_http_requests_total[5m])",
+          "legendFormat": "{{instance}}",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "CPU usage",
+      "title": "Nginx HTTP requests/5min",
       "type": "timeseries"
     },
     {
@@ -609,6 +611,101 @@
     },
     {
       "datasource": {
+        "type": "prometheus",
+        "uid": "P40645DF18AF953B4"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "P40645DF18AF953B4"
+          },
+          "editorMode": "builder",
+          "exemplar": false,
+          "expr": "rate(node_cpu_seconds_total{mode!=\"idle\"}[5m])",
+          "hide": false,
+          "legendFormat": "{{mode}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "CPU usage",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
         "type": "datasource",
         "uid": "grafana"
       },
@@ -616,7 +713,7 @@
         "h": 3,
         "w": 24,
         "x": 0,
-        "y": 24
+        "y": 32
       },
       "id": 1,
       "targets": [
@@ -639,12 +736,14 @@
         "h": 15,
         "w": 12,
         "x": 0,
-        "y": 27
+        "y": 35
       },
       "id": 3,
       "links": [],
       "options": {
         "folderId": 0,
+        "includeVars": false,
+        "keepTime": false,
         "maxItems": 30,
         "query": "",
         "showHeadings": true,
@@ -653,7 +752,7 @@
         "showStarred": true,
         "tags": []
       },
-      "pluginVersion": "9.5.2",
+      "pluginVersion": "10.0.2",
       "tags": [],
       "targets": [
         {
@@ -676,7 +775,7 @@
         "h": 15,
         "w": 12,
         "x": 12,
-        "y": 27
+        "y": 35
       },
       "id": 4,
       "links": [],
@@ -697,7 +796,7 @@
       "type": "news"
     }
   ],
-  "refresh": false,
+  "refresh": "",
   "schemaVersion": 38,
   "style": "dark",
   "tags": [],
@@ -705,8 +804,8 @@
     "list": []
   },
   "time": {
-    "from": "2023-07-22T01:55:10.667Z",
-    "to": "2023-07-23T01:55:10.667Z"
+    "from": "now-12h",
+    "to": "now"
   },
   "timepicker": {
     "hidden": true,
@@ -738,6 +837,6 @@
   "timezone": "browser",
   "title": "Node",
   "uid": "d872af8a-0e64-4b22-8d97-7db77958960b",
-  "version": 1,
+  "version": 4,
   "weekStart": ""
 }
