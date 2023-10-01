@@ -32,6 +32,9 @@ in {
   services.miniflux-config.subdomain = "rss";
   services.miniflux-config.domain = userConfig.domain;
   services.woodpecker-config.domain = userConfig.domain;
+  # A small pun here: we assume that the Gitea/Woodpecker username
+  # is the same as the remote username.
+  services.woodpecker-config.admin-users = [userConfig.remoteUsername];
   services.grafana-config.domain = userConfig.domain;
   services.prometheus-config.domain-exporter-domains = [userConfig.domain];
 

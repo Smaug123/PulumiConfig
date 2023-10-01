@@ -43,10 +43,8 @@
       <None Include="Nix\gitea\gitea-config.nix" />
       <Content Include="Nix\config.json" />
       <Content Include="Nix\ssh-keys.json" />
-      <Content Include="Nix\woodpecker\compose.yaml" />
-      <Content Include="Nix\woodpecker\start.sh" />
+      <Content Include="Nix\woodpecker\secrets.sh" />
       <Content Include="Nix\woodpecker\woodpecker.nix" />
-      <Content Include="Nix\woodpecker\stop.sh" />
       <Content Include="Nix\grafana\grafana.nix" />
       <Content Include="Nix\grafana\node.json" />
       <Content Include="Nix\prometheus\prometheus.nix" />
