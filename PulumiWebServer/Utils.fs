@@ -11,7 +11,6 @@ module Utils =
 
         use s =
             names
-            |> Seq.filter (fun s -> s.EndsWith name)
             |> Seq.exactlyOne
             |> assembly.GetManifestResourceStream
             |> fun s -> new StreamReader (s)
