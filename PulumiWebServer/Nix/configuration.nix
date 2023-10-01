@@ -1,5 +1,11 @@
-{nixpkgs, ...}: let
+{
+  nixpkgs,
+  website,
+  ...
+}: let
   lib = nixpkgs.lib;
+  # TODO: how can I get this passed in?
+  pkgs = nixpkgs.legacyPackages."x86_64-linux";
   userConfig = lib.importJSON ./config.json;
   sshKeys = lib.importJSON ./ssh-keys.json;
 in {
@@ -40,6 +46,17 @@ in {
 
   system.stateVersion = "23.05";
 
+  nix = {
+    settings = {
+      auto-optimise-store = true;
+      experimental-features = ["nix-command" "flakes"];
+    };
+    package = pkgs.nixUnstable;
+    extraOptions = ''
+      experimental-features = ca-derivations
+    '';
+  };
+
   boot.tmp.cleanOnBoot = true;
   zramSwap.enable = true;
   networking.hostName = userConfig.name;
@@ -48,4 +65,13 @@ in {
 
   virtualisation.docker.enable = true;
   users.extraGroups.docker.members = [userConfig.remoteUsername];
+
+  security.pam.loginLimits = [
+    {
+      domain = "*";
+      type = "soft";
+      item = "nofile";
+      value = "8192";
+    }
+  ];
 }

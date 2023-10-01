@@ -2,6 +2,7 @@
   pkgs,
   lib,
   config,
+  website,
   ...
 }: {
   options = {
@@ -47,6 +48,12 @@
     ];
 
     users.users."nginx".extraGroups = [config.users.groups.keys.name];
+
+    system.activationScripts = {
+      create-website = ''
+        ln -sfn ${website} /preserve/www/html
+      '';
+    };
 
     services.nginx = {
       enable = true;
