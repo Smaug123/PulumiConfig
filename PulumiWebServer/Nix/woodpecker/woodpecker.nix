@@ -55,13 +55,12 @@
 
   config.services.woodpecker-agents = {
     agents = {
-      podman-agent = {
+      docker-agent = {
         enable = true;
-        extraGroups = ["podman"];
+        extraGroups = ["docker"];
         environment = {
           WOODPECKER_SERVER = "localhost:${toString config.services.woodpecker-config.grpc-port}";
           WOODPECKER_BACKEND = "docker";
-          DOCKER_HOST = "unix:///run/podman/podman.sock";
         };
         environmentFile = ["/preserve/woodpecker/woodpecker-combined-secrets.txt"];
       };
@@ -70,8 +69,8 @@
 
   config.systemd.services.woodpecker-secret = {
     description = "ensure woodpecker secrets are in place";
-    wantedBy = ["multi-user.target" "woodpecker-server.service" "woodpecker-agent-podman-agent.service"];
-    before = ["woodpecker-server.service" "woodpecker-agent-podman-agent.service"];
+    wantedBy = ["multi-user.target" "woodpecker-server.service" "woodpecker-agent-docker-agent.service"];
+    before = ["woodpecker-server.service" "woodpecker-agent-docker-agent.service"];
     script = builtins.readFile ./secrets.sh;
     serviceConfig = {
       Restart = "no";

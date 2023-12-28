@@ -14,11 +14,11 @@
       subdomain = lib.mkOption {
         type = lib.types.str;
         example = "rss";
-        description = lib.mdDoc "Subdomain in which to put Gitea";
+        description = lib.mdDoc "Subdomain in which to put Miniflux";
       };
       port = lib.mkOption {
         type = lib.types.port;
-        description = lib.mdDoc "Gitea localhost port";
+        description = lib.mdDoc "Miniflux localhost port";
         default = 8080;
       };
     };

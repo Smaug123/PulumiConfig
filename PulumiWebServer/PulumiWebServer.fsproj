@@ -50,7 +50,10 @@
       <Content Include="Nix\prometheus\prometheus.nix" />
       <Content Include="Nix\prometheus\domains.yaml" />
       <Content Include="Nix\miniflux\miniflux.nix" />
-      <None Include="Nix\nginx\nginx-config.nix" />
+      <None Include="Nix\nginx\nginx.nix" />
+      <Content Include="Nix\puregym\puregym.nix" />
+      <Content Include="Nix\puregym\refresh-auth.sh" />
+      <Content Include="Nix\puregym\puregym.py" />
       <Content Include="config.schema.json" />
       <Content Include="waitforready.sh">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
