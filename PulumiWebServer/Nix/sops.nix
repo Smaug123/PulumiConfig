@@ -19,5 +19,7 @@
     "miniflux_admin_password" = {owner = "miniflux";};
     "grafana_admin_password" = {owner = "grafana";};
     "grafana_secret_key" = {owner = "grafana";};
+    "puregym_email" = {owner = "puregym";};
+    "puregym_pin" = {owner = "puregym";};
   };
 }

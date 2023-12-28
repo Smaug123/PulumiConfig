@@ -1,6 +1,7 @@
 {
   nixpkgs,
   website,
+  puregym-client,
   ...
 }: let
   lib = nixpkgs.lib;
@@ -15,10 +16,11 @@ in {
     ./gitea/gitea-config.nix
     ./miniflux/miniflux.nix
     ./userconfig.nix
-    ./nginx/nginx-config.nix
+    ./nginx/nginx.nix
     ./woodpecker/woodpecker.nix
     ./prometheus/prometheus.nix
     ./grafana/grafana.nix
+    ./puregym/puregym.nix
     # generated at runtime by nixos-infect and copied here
     ./hardware-configuration.nix
     ./networking.nix
@@ -43,6 +45,10 @@ in {
   services.woodpecker-config.admin-users = [userConfig.remoteUsername];
   services.grafana-config.domain = userConfig.domain;
   services.prometheus-config.domain-exporter-domains = [userConfig.domain];
+  services.puregym-config.domain = userConfig.domain;
+  services.puregym-config.subdomain = "puregym";
+
+  services.journald.extraConfig = "SystemMaxUse=100M";
 
   system.stateVersion = "23.05";
 
@@ -63,7 +69,10 @@ in {
   services.openssh.enable = true;
   users.users.root.openssh.authorizedKeys.keys = sshKeys;
 
-  virtualisation.docker.enable = true;
+  virtualisation.docker = {
+    enable = true;
+  };
+
   users.extraGroups.docker.members = [userConfig.remoteUsername];
 
   security.pam.loginLimits = [
