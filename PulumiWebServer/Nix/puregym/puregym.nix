@@ -47,8 +47,8 @@
       };
     };
     systemd.timers.puregym-refresh-auth = {
-      wantedBy = [ "timers.target" ];
-      partOf = [ "puregym-refresh-auth.service" ];
+      wantedBy = ["timers.target"];
+      partOf = ["puregym-refresh-auth.service"];
       timerConfig = {
         OnCalendar = "monthly";
         Unit = "puregym-refresh-auth.service";
