@@ -16,8 +16,8 @@
         projectFile = "./PulumiWebServer/PulumiWebServer.fsproj";
         testProjectFile = "./PulumiWebServer.Test/PulumiWebServer.Test.fsproj";
         pname = "PulumiWebServer";
-        dotnet-sdk = pkgs.dotnet-sdk_7;
-        dotnet-runtime = pkgs.dotnetCorePackages.runtime_7_0;
+        dotnet-sdk = pkgs.dotnet-sdk_8;
+        dotnet-runtime = pkgs.dotnetCorePackages.runtime_8_0;
         version = "0.0.1";
         dotnetTool = toolName: toolVersion: sha256:
           pkgs.stdenvNoCC.mkDerivation rec {
@@ -40,7 +40,7 @@
           };
       in {
         packages = {
-          fantomas = dotnetTool "fantomas" "5.2.0-alpha-010" "sha256-CuoROZBBhaK0IFjbKNLvzgX4GXwuIybqIvCtuqROBMk=";
+          fantomas = dotnetTool "fantomas" (builtins.fromJSON (builtins.readFile ./.config/dotnet-tools.json)).tools.fantomas.version "sha256-Jmo7s8JMdQ8SxvNvPnryfE7n24mIgKi5cbgNwcQw3yU=";
           fetchDeps = let
             flags = [];
             runtimeIds = map (system: pkgs.dotnetCorePackages.systemToDotnetRid system) dotnet-sdk.meta.platforms;
@@ -71,7 +71,7 @@
           };
         };
         devShells = let
-          requirements = [pkgs.dotnet-sdk_7 pkgs.git pkgs.alejandra pkgs.nodePackages.markdown-link-check pkgs.jq];
+          requirements = [pkgs.dotnet-sdk_8 pkgs.git pkgs.alejandra pkgs.nodePackages.markdown-link-check pkgs.jq];
         in {
           default = pkgs.mkShell {
             buildInputs =

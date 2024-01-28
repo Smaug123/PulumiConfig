@@ -5,9 +5,7 @@ open System.IO
 [<RequireQualifiedAccess>]
 module Utils =
 
-    type Dummy =
-        class
-        end
+    type Dummy = class end
 
     let rec findFileAbove (fileName : string) (di : DirectoryInfo) =
         if isNull di then
