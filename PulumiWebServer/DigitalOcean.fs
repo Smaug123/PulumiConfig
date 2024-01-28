@@ -15,7 +15,7 @@ module DigitalOcean =
     let makeNixosServer (name : string) (region : Region) (sshKeys : Input<SshFingerprint>[]) : Output<Droplet> =
         output {
             let args =
-                DropletArgs (Name = Input.lift name, Size = InputUnion.liftRight DropletSlug.DropletS1VCPU1GB)
+                DropletArgs (Name = Input.lift name, Size = InputUnion.liftRight DropletSlug.DropletS1VCPU2GB)
 
             args.Tags.Add (Input.lift "nixos")
             args.Image <- "ubuntu-22-04-x64" |> Input.lift
