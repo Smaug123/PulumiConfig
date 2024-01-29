@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-      <TargetFramework>net7.0</TargetFramework>
+      <TargetFramework>net8.0</TargetFramework>
       <OutputType>Exe</OutputType>
       <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
@@ -9,10 +9,10 @@
     <ItemGroup>
         <PackageReference Include="Nager.PublicSuffix" Version="2.4.0" />
         <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-        <PackageReference Include="Pulumi" Version="3.54.1" />
-        <PackageReference Include="Pulumi.Cloudflare" Version="5.2.0" />
+        <PackageReference Include="Pulumi" Version="3.59.0" />
+        <PackageReference Include="Pulumi.Cloudflare" Version="5.16.0" />
         <PackageReference Include="Pulumi.Command" Version="0.5.2" />
-        <PackageReference Include="Pulumi.DigitalOcean" Version="4.19.1" />
+        <PackageReference Include="Pulumi.DigitalOcean" Version="4.24.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -54,6 +54,8 @@
       <Content Include="Nix\puregym\puregym.nix" />
       <Content Include="Nix\puregym\refresh-auth.sh" />
       <Content Include="Nix\puregym\puregym.py" />
+      <Content Include="Nix\whisper\whisper.nix" />
+      <Content Include="Nix\whisper\whisper.py" />
       <Content Include="config.schema.json" />
       <Content Include="waitforready.sh">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

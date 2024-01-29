@@ -13,6 +13,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     sops.url = "github:Mic92/sops-nix";
+    whisper-packages.url = "github:Smaug123/whisper.cpp/nix-small";
   };
 
   outputs = {
@@ -22,6 +23,7 @@
     home-manager,
     website,
     puregym-client,
+    whisper-packages
   } @ inputs: let
     system = "x86_64-linux";
   in {
@@ -31,6 +33,7 @@
         inherit system;
         website = website.packages.${system}.default;
         puregym-client = puregym-client.packages.${system}.default;
+        whisper-packages = whisper-packages.packages.${system};
       };
       modules = [
         (import ./configuration.nix (inputs // {inherit inputs;}))
