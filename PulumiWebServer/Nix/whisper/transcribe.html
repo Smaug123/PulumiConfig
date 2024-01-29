@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Whisper Transcription</title>
+    <style>
+        #output {
+            white-space: pre-wrap;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px;
+            width: 95%;
+            height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Whisper Transcription</h1>
+    <p>Submit file for transcription</p>
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+        <input type="file" name="file">
+        <input type="submit" value="Submit">
+    </form>
+
+    <div>
+      <label for="file-to-analyze">File to analyze:</label>
+      <div contenteditable="true" id="file-to-analyze">{no file set}</div>
+    </div>
+    <button id="start">Start analysing</button>
+
+    <button id="displayWav" hidden="hidden">Listen to file being transcribed</button>
+    <div id="wavContainer"></div>
+
+    <div id="status"></div>
+    <div id="output"></div>
+
+    <script>
+        const uploadForm = document.querySelector('form');
+        const uploadResultDiv = document.getElementById('file-to-analyze');
+        uploadForm.addEventListener('submit', e => {
+            e.preventDefault();
+
+            const files = document.querySelector('[type=file]').files;
+            const formData = new FormData();
+            formData.append('file', files[0]);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(response => {
+                uploadResultDiv.innerText = response;
+            })
+            .catch(error => console.error(error))
+        });
+
+        const outputDiv = document.getElementById('output');
+        const statusDiv = document.getElementById('status');
+        const displayButton = document.getElementById('displayWav');
+        const wavContainer = document.getElementById('wavContainer');
+        const startButton = document.getElementById('start');
+
+        startButton.onclick = function() {
+            // Create a new EventSource instance pointing to the SSE route
+            // const eventSource = new EventSource('/transcribe-youtube?url=https://www.youtube.com/watch?v=-xZQ0YZ7ls4');
+            const eventSource = new EventSource('/transcribe-file?file=' + uploadResultDiv.innerText);
+
+            let file = '';
+
+            displayButton.onclick = function () {
+                const audioElt = document.createElement('audio');
+                audioElt.controls = true;
+                audioElt.src = '/download?file=' + file;
+
+                wavContainer.innerHTML = '';
+                wavContainer.appendChild(audioElt);
+            };
+
+            eventSource.addEventListener('started', function (e) {
+                statusDiv.innerText = 'Transcription has begun. Please hold the line; my server is only very small and weedy.';
+                displayButton.hidden = false;
+                file = e.data;
+            });
+
+            eventSource.addEventListener('quit', function (e) {
+                statusDiv.innerText = 'Transcription finished';
+                eventSource.close()
+            });
+
+            eventSource.onmessage = function (e) {
+                outputDiv.innerText += e.data + '\n';
+            };
+
+            // Handle any errors
+            eventSource.onerror = function (e) {
+                if (eventSource.readyState === EventSource.CLOSED) {
+                    console.log('Connection was closed');
+                } else {
+                    outputDiv.innerText += 'Error! Connection was lost. Refresh the page to retry.\n';
+                    eventSource.close()
+                }
+            };
+        };
+    </script>
+</body>
+</html>
