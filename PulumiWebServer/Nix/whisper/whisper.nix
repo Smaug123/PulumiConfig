@@ -34,7 +34,9 @@
     systemd.services.whisper-server = {
       description = "whisper-server";
       wantedBy = ["multi-user.target"];
-      serviceConfig = let python = pkgs.python3.withPackages (p: with p; [flask waitress]); in {
+      serviceConfig = let
+        python = pkgs.python3.withPackages (p: with p; [flask waitress]);
+      in {
         Restart = "always";
         Type = "exec";
         User = "whisper";
@@ -61,4 +63,3 @@
     };
   };
 }
-

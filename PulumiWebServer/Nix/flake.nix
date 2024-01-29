@@ -23,7 +23,7 @@
     home-manager,
     website,
     puregym-client,
-    whisper-packages
+    whisper-packages,
   } @ inputs: let
     system = "x86_64-linux";
   in {
