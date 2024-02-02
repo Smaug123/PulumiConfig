@@ -11,7 +11,7 @@ app = Flask(__name__)
 youtube_regex = re.compile(
     r"^(?:https?://)?(?:www\.)?(?:youtu\.be/|youtube\.com/(?:embed/|v/|watch\?v=|watch\?.+&v=))((\w|-){11})(?:\S+)?$")
 
-alnum_regex = re.compile(r"^[a-zA-Z0-9]+$")
+acceptable_regex = re.compile(r"^[a-zA-Z0-9_]+$")
 
 
 def generate_output(wav_file):
@@ -70,8 +70,8 @@ def transcribe_file():
         file = request.args.get('file')
     except KeyError:
         return Response("must have a file as obtained from /upload, in the format ?file=...", status=400)
-    if alnum_regex.match(file) is None:
-        return Response(f"filename '{file}' was not alphanumeric", status=400)
+    if acceptable_regex.match(file) is None:
+        return Response(f"filename '{file}' did not match acceptable regex", status=400)
     return Response(generate_output(file), mimetype="text/event-stream")
 
 
@@ -85,6 +85,11 @@ def upload():
     if 'file' not in request.files:
         return 'No "file" part in request', 400
     file = request.files['file']
+
+    try:
+        os.mkdir("/tmp/whisper")
+    except FileExistsError:
+        pass
 
     # Create temp file for this upload
     handle, temp_file = tempfile.mkstemp(text=False)
@@ -111,8 +116,8 @@ def download():
     except KeyError:
         return Response("must have a file parameter", status=400)
 
-    if alnum_regex.match(file) is None:
-        return Response(f"file '{file}' was not alphanumeric, bad format", status=400)
+    if acceptable_regex.match(file) is None:
+        return Response(f"file '{file}' did not match acceptable regex, bad format", status=400)
 
     return Response(open(f"/tmp/whisper/{file}.wav", 'rb').read(), mimetype="audio/wav")
 
