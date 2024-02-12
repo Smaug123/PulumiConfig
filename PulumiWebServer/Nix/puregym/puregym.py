@@ -54,8 +54,7 @@ class MyHandler(BaseHTTPRequestHandler):
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
         for gym_id, gym_name in self._all_gyms.items():
-            self.wfile.write(f'{gym_id}: {gym_name}'.encode())
-
+            self.wfile.write(f'{gym_id}: {gym_name}\n'.encode())
 
     def get_fullness(self, query: dict[AnyStr, list[AnyStr]]) -> None:
         desired_gym_name = None
