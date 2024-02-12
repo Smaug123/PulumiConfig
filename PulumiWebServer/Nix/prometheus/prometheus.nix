@@ -53,6 +53,18 @@
 
       scrapeConfigs = [
         {
+          job_name = "gym-fullness";
+          static_configs = [
+            {
+              # Gym 19 is London Oval
+              targets = ["localhost:${toString config.services.puregym-config.port}"];
+            }
+          ];
+          params = { gym_id = ["19"]; };
+          metrics_path = "/fullness-prometheus";
+          scrape_interval = "5m";
+        }
+        {
           job_name = "node";
           static_configs = [
             {
