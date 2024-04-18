@@ -36,6 +36,7 @@
     services.prometheus = {
       enable = true;
       port = config.services.prometheus-config.port;
+      retentionTime = "60d";
       exporters = {
         node = {
           enable = true;
@@ -60,7 +61,7 @@
               targets = ["localhost:${toString config.services.puregym-config.port}"];
             }
           ];
-          params = {gym_id = ["19"];};
+          params = { gym_id = ["19"]; };
           metrics_path = "/fullness-prometheus";
           scrape_interval = "5m";
         }
