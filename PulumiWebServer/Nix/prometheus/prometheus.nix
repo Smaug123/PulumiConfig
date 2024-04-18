@@ -36,6 +36,7 @@
     services.prometheus = {
       enable = true;
       port = config.services.prometheus-config.port;
+      retentionTime = "60d";
       exporters = {
         node = {
           enable = true;
