@@ -5,7 +5,6 @@
     flake-utils.url = "github:numtide/flake-utils";
   };
   outputs = {
-    self,
     nixpkgs,
     flake-utils,
     ...
@@ -40,34 +39,12 @@
           };
       in {
         packages = {
-          fantomas = dotnetTool "fantomas" (builtins.fromJSON (builtins.readFile ./.config/dotnet-tools.json)).tools.fantomas.version "sha256-Jmo7s8JMdQ8SxvNvPnryfE7n24mIgKi5cbgNwcQw3yU=";
-          fetchDeps = let
-            flags = [];
-            runtimeIds = map (system: pkgs.dotnetCorePackages.systemToDotnetRid system) dotnet-sdk.meta.platforms;
-          in
-            pkgs.writeShellScriptBin "fetch-${pname}-deps" (builtins.readFile (pkgs.substituteAll {
-              src = ./nix/fetchDeps.sh;
-              pname = pname;
-              binPath = pkgs.lib.makeBinPath [pkgs.coreutils dotnet-sdk (pkgs.nuget-to-nix.override {inherit dotnet-sdk;})];
-              projectFiles = toString (pkgs.lib.toList projectFile);
-              testProjectFiles = toString (pkgs.lib.toList testProjectFile);
-              rids = pkgs.lib.concatStringsSep "\" \"" runtimeIds;
-              packages = dotnet-sdk.packages;
-              storeSrc = pkgs.srcOnly {
-                src = ./.;
-                pname = pname;
-                version = version;
-              };
-            }));
+          fantomas = dotnetTool "fantomas" (builtins.fromJSON (builtins.readFile ./.config/dotnet-tools.json)).tools.fantomas.version (builtins.head (builtins.filter (elem: elem.pname == "fantomas") ((import ./nix/deps.nix) {fetchNuGet = x: x;}))).sha256;
           default = pkgs.buildDotnetModule {
-            pname = pname;
-            version = version;
+            inherit pname version projectFile testProjectFile dotnet-sdk dotnet-runtime;
             src = ./.;
-            projectFile = projectFile;
-            nugetDeps = ./nix/deps.nix;
+            nugetDeps = ./nix/deps.nix; # `nix build .#default.passthru.fetch-deps && ./result` and put the result here
             doCheck = true;
-            dotnet-sdk = dotnet-sdk;
-            dotnet-runtime = dotnet-runtime;
           };
         };
         devShells = let
