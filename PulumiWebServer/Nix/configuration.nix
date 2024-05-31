@@ -1,10 +1,4 @@
-{
-  nixpkgs,
-  website,
-  puregym-client,
-  whisper-packages,
-  ...
-}: let
+{nixpkgs, ...}: let
   lib = nixpkgs.lib;
   # TODO: how can I get this passed in?
   pkgs = nixpkgs.legacyPackages."x86_64-linux";
@@ -25,7 +19,7 @@ in {
     # generated at runtime by nixos-infect and copied here
     ./hardware-configuration.nix
     ./networking.nix
-    ./whisper/whisper.nix
+    # ./whisper/whisper.nix
   ];
 
   services.radicale-config.domain = userConfig.domain;
@@ -49,8 +43,8 @@ in {
   services.prometheus-config.domain-exporter-domains = [userConfig.domain];
   services.puregym-config.domain = userConfig.domain;
   services.puregym-config.subdomain = "puregym";
-  services.whisper-config.domain = userConfig.domain;
-  services.whisper-config.subdomain = "whisper";
+  # services.whisper-config.domain = userConfig.domain;
+  # services.whisper-config.subdomain = "whisper";
 
   services.journald.extraConfig = "SystemMaxUse=100M";
 
