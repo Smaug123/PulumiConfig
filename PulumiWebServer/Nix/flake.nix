@@ -1,19 +1,26 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     website = {
       url = "github:Smaug123/static-site-pipeline";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     puregym-client = {
       url = "git+https://gitea.patrickstevens.co.uk/patrick/puregym-unofficial-dotnet";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    sops.url = "github:Mic92/sops-nix";
-    whisper-packages.url = "github:Smaug123/whisper.cpp/nix-small";
+    sops = {
+      url = "github:Mic92/sops-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    whisper-packages = {
+      url = "github:Smaug123/whisper.cpp/nix-small";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
