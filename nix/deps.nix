@@ -8,18 +8,13 @@
   })
   (fetchNuGet {
     pname = "fantomas";
-    version = "6.3.0-alpha-005";
-    sha256 = "09fz632c23dqf6wsi048i7dyfkkwy9x3wvzkqq90yxacqarknsi6";
+    version = "6.3.11";
+    sha256 = "1p7rg0jdizv233xh9z73iz425d1fxaf86lvalxfxnk0r80ccfmnp";
   })
   (fetchNuGet {
     pname = "FsCheck";
     version = "2.16.5";
     sha256 = "0h0k91myra1ricvmlvn27wp3kdr7ib3q55yg5isk6206wh9yhigr";
-  })
-  (fetchNuGet {
-    pname = "FSharp.Core";
-    version = "8.0.101";
-    sha256 = "0prgcnki6s0rlrfbarrcv50w1bbhaalsyhhw5gsnjs2is7qrjbii";
   })
   (fetchNuGet {
     pname = "FsUnit";

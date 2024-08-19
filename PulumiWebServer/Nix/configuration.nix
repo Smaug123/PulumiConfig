@@ -55,9 +55,9 @@ in {
       auto-optimise-store = true;
       experimental-features = ["nix-command" "flakes"];
     };
-    package = pkgs.nixUnstable;
+    package = pkgs.nixVersions.latest;
     extraOptions = ''
-      experimental-features = ca-derivations
+      experimental-features = ca-derivations flakes
     '';
   };
 
