@@ -160,6 +160,11 @@
     "hash": "sha256-oxr6gv3VIvk1vH0YZdAmWgyY0yobxtjFfRwnW1D8Pcc="
   },
   {
+    "pname": "NJsonSchema.NewtonsoftJson",
+    "version": "11.1.0",
+    "hash": "sha256-GDE5l2n7Kj/WkOtYLLzBWXHRGsEeUsCRzsmrE2MmWOs="
+  },
+  {
     "pname": "NUnit",
     "version": "4.0.1",
     "hash": "sha256-jd1CD5nHVXkpvBNpVDJcJyfTggCHLyDBySVSvtrA8Uk="
