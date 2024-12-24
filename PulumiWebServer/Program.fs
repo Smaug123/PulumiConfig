@@ -26,6 +26,10 @@ module Program =
         use httpClient = new HttpClient ()
         let cacheProvider = RuleProviders.CacheProviders.LocalFileSystemCacheProvider ()
         let ruleProvider = CachedHttpRuleProvider (cacheProvider, httpClient)
+
+        if not (ruleProvider.BuildAsync().Result) then
+            failwith "did not build rules"
+
         let parser = DomainParser ruleProvider
 
         fun () ->
