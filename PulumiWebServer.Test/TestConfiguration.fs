@@ -4,6 +4,7 @@ open System
 open System.IO
 open NUnit.Framework
 open FsCheck
+open FsCheck.FSharp
 open FsUnitTyped
 open PulumiWebServer
 
@@ -18,7 +19,7 @@ module TestConfiguration =
 
     let bashStringGenerator =
         gen {
-            let! s = Arb.generate<string>
+            let! s = ArbMap.defaults |> ArbMap.generate<string>
             return BashString.make s
         }
 
@@ -37,14 +38,25 @@ module TestConfiguration =
 
     [<Test>]
     let ``Serialisation round-trip`` () =
-        Arb.register<MyGenerators> () |> ignore
+        let arbMap =
+            ArbMap.defaults
+            |> ArbMap.mergeArb
+                { new Arbitrary<FileInfo>() with
+                    override x.Generator = fileInfoGenerator
+                    override x.Shrinker t = Seq.empty
+                }
+            |> ArbMap.mergeArb
+                { new Arbitrary<BashString>() with
+                    override x.Generator = bashStringGenerator
+                    override x.Shrinker t = Seq.empty
+                }
 
         let property (c : Configuration) : bool =
             let serialised = SerialisedConfig.Make c
             let roundTripped = SerialisedConfig.Deserialise serialised
             c = roundTripped
 
-        property |> Check.QuickThrowOnFailure
+        Check.One (Config.QuickThrowOnFailure, Prop.forAll (arbMap.ArbFor<_> ()) property)
 
     [<Test>]
     let ``Specific example`` () =

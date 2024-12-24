@@ -1,6 +1,8 @@
 namespace PulumiWebServer
 
+open System.Net.Http
 open Nager.PublicSuffix
+open Nager.PublicSuffix.RuleProviders
 open Pulumi
 open Pulumi.Cloudflare
 
@@ -67,6 +69,7 @@ module Cloudflare =
         }
 
     let addDns
+        (parser : IDomainParser)
         (domain : DomainName)
         (cnames : Map<WellKnownCname, WellKnownCnameTarget>)
         (subdomains : Set<WellKnownSubdomain>)
@@ -76,9 +79,8 @@ module Cloudflare =
         =
         let globalSubdomain =
             let (DomainName domain) = domain
-            let parser = DomainParser (WebTldRuleProvider ())
             let info = parser.Parse domain
-            info.SubDomain |> Option.ofObj
+            info.Subdomain |> Option.ofObj
 
         let subdomainMarker =
             match globalSubdomain with

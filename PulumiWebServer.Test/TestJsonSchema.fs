@@ -3,7 +3,6 @@ namespace PulumiWebServer.Test
 open System.IO
 open System.Reflection
 open PulumiWebServer
-open NJsonSchema.Generation
 open NJsonSchema.Validation
 open NUnit.Framework
 open FsUnitTyped
@@ -53,7 +52,8 @@ module TestSchema =
             |> fun fi -> fi.Directory
             |> Utils.findFileAbove "PulumiWebServer/config.schema.json"
 
-        let settings = JsonSchemaGeneratorSettings ()
+        let settings =
+            NJsonSchema.NewtonsoftJson.Generation.NewtonsoftJsonSchemaGeneratorSettings ()
 
         settings.SerializerSettings <-
             JsonSerializerSettings (ContractResolver = CamelCasePropertyNamesContractResolver ())

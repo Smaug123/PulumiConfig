@@ -1,7 +1,8 @@
 ﻿namespace PulumiWebServer
 
-open System
+open System.Net.Http
 open Nager.PublicSuffix
+open Nager.PublicSuffix.RuleProviders
 open Newtonsoft.Json
 open Pulumi
 open Pulumi.DigitalOcean
@@ -9,10 +10,9 @@ open System.IO
 
 module Program =
 
-    let stripSubdomain (DomainName str) =
-        let parser = DomainParser (WebTldRuleProvider ())
+    let stripSubdomain (parser : IDomainParser) (DomainName str) =
         let info = parser.Parse str
-        $"{info.Domain}.{info.TLD}" |> DomainName
+        $"{info.Domain}.{info.TopLevelDomain}" |> DomainName
 
     let config =
         use file =
@@ -23,6 +23,15 @@ module Program =
 
     [<EntryPoint>]
     let main _argv =
+        use httpClient = new HttpClient ()
+        let cacheProvider = RuleProviders.CacheProviders.LocalFileSystemCacheProvider ()
+        let ruleProvider = CachedHttpRuleProvider (cacheProvider, httpClient)
+
+        if not (ruleProvider.BuildAsync().Result) then
+            failwith "did not build rules"
+
+        let parser = DomainParser ruleProvider
+
         fun () ->
             output {
                 let! existingKeys = DigitalOcean.storedSshKeys (Output.Create "")
@@ -68,10 +77,10 @@ module Program =
                         IPv6 = Option.ofObj ipv6
                     }
 
-                let! zone = Cloudflare.getZone (stripSubdomain config.Domain)
+                let! zone = Cloudflare.getZone (stripSubdomain parser config.Domain)
 
                 let dns =
-                    Cloudflare.addDns config.Domain config.Cnames config.Subdomains zone address
+                    Cloudflare.addDns parser config.Domain config.Cnames config.Subdomains zone address
 
                 let readyCommand = Server.waitForReady 1 config.PrivateKey address
                 let! _ = readyCommand.Stdout
