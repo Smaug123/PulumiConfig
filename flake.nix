@@ -15,8 +15,8 @@
         projectFile = "./PulumiWebServer/PulumiWebServer.fsproj";
         testProjectFile = "./PulumiWebServer.Test/PulumiWebServer.Test.fsproj";
         pname = "PulumiWebServer";
-        dotnet-sdk = pkgs.dotnet-sdk_8;
-        dotnet-runtime = pkgs.dotnetCorePackages.runtime_8_0;
+        dotnet-sdk = pkgs.dotnetCorePackages.sdk_9_0;
+        dotnet-runtime = pkgs.dotnetCorePackages.runtime_9_0;
         version = "0.0.1";
         dotnetTool = toolName: toolVersion: sha256:
           pkgs.stdenvNoCC.mkDerivation rec {
@@ -27,7 +27,7 @@
               pname = name;
               version = version;
               sha256 = sha256;
-              installPhase = ''mkdir -p $out/bin && cp -r tools/net6.0/any/* $out/bin'';
+              installPhase = ''mkdir -p $out/bin && cp -r tools/*/any/* $out/bin'';
             };
             installPhase = ''
               runHook preInstall
@@ -38,17 +38,19 @@
             '';
           };
       in {
-        packages = {
-          fantomas = dotnetTool "fantomas" (builtins.fromJSON (builtins.readFile ./.config/dotnet-tools.json)).tools.fantomas.version (builtins.head (builtins.filter (elem: elem.pname == "fantomas") ((import ./nix/deps.nix) {fetchNuGet = x: x;}))).sha256;
+        packages = let
+          deps = builtins.fromJSON (builtins.readFile ./nix/deps.json);
+        in {
+          fantomas = dotnetTool "fantomas" (builtins.fromJSON (builtins.readFile ./.config/dotnet-tools.json)).tools.fantomas.version (builtins.head (builtins.filter (elem: elem.pname == "fantomas") deps)).sha256;
           default = pkgs.buildDotnetModule {
             inherit pname version projectFile testProjectFile dotnet-sdk dotnet-runtime;
             src = ./.;
-            nugetDeps = ./nix/deps.nix; # `nix build .#default.passthru.fetch-deps && ./result` and put the result here
+            nugetDeps = ./nix/deps.json; # `nix build .#default.fetch-deps && ./result nix/deps.json`
             doCheck = true;
           };
         };
         devShells = let
-          requirements = [pkgs.dotnet-sdk_8 pkgs.git pkgs.alejandra pkgs.nodePackages.markdown-link-check pkgs.jq];
+          requirements = [dotnet-sdk pkgs.git pkgs.alejandra pkgs.nodePackages.markdown-link-check pkgs.jq];
         in {
           default = pkgs.mkShell {
             buildInputs =

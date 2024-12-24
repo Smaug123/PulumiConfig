@@ -1,18 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-      <TargetFramework>net8.0</TargetFramework>
+      <TargetFramework>net9.0</TargetFramework>
       <OutputType>Exe</OutputType>
       <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Nager.PublicSuffix" Version="2.4.0" />
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-        <PackageReference Include="Pulumi" Version="3.59.0" />
-        <PackageReference Include="Pulumi.Cloudflare" Version="5.16.0" />
-        <PackageReference Include="Pulumi.Command" Version="0.5.2" />
-        <PackageReference Include="Pulumi.DigitalOcean" Version="4.24.0" />
+        <PackageReference Include="Nager.PublicSuffix" Version="3.4.0" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="Pulumi" Version="3.71.1" />
+        <PackageReference Include="Pulumi.Cloudflare" Version="5.45.0" />
+        <PackageReference Include="Pulumi.Command" Version="1.0.1" />
+        <PackageReference Include="Pulumi.DigitalOcean" Version="4.37.1" />
     </ItemGroup>
 
     <ItemGroup>
@@ -61,5 +61,5 @@
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
     </ItemGroup>
-    
+
 </Project>
