@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Base64 Decoder and SHA256 Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        textarea {
+            width: 100%;
+            min-height: 100px;
+            padding: 8px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #hashOutput {
+            font-family: monospace;
+            padding: 8px;
+            background-color: #f5f5f5;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="input-group">
+            <label for="base64Input">Base64 Input:</label>
+            <textarea id="base64Input" placeholder="Enter base64 encoded text here"></textarea>
+            <button onclick="decodeBase64()">Decode Base64</button>
+        </div>
+
+        <div class="input-group">
+            <label for="textInput">Text Input:</label>
+            <textarea id="textInput" placeholder="Enter text or see decoded base64 here"></textarea>
+            <button onclick="calculateSHA256()">Calculate SHA256</button>
+        </div>
+
+        <div class="input-group">
+            <label for="hashOutput">SHA256 Hash:</label>
+            <div id="hashOutput"></div>
+        </div>
+    </div>
+
+    <script>
+        function decodeBase64() {
+            try {
+                const base64Input = document.getElementById('base64Input').value;
+                const decoded = atob(base64Input);
+                document.getElementById('textInput').value = decoded;
+            } catch (error) {
+                alert('Invalid base64 input: ' + error.message);
+            }
+        }
+
+        async function calculateSHA256() {
+            try {
+                const text = document.getElementById('textInput').value;
+                const encoder = new TextEncoder();
+                const data = encoder.encode(text);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                document.getElementById('hashOutput').textContent = hashHex;
+            } catch (error) {
+                alert('Error calculating hash: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

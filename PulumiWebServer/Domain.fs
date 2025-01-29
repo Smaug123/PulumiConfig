@@ -95,6 +95,7 @@ type Address =
 
 type WellKnownSubdomain =
     | Nextcloud
+    | Apps
     | Gitea
     | Radicale
     | Rss
@@ -106,18 +107,20 @@ type WellKnownSubdomain =
 
     override this.ToString () =
         match this with
-        | Nextcloud -> "nextcloud"
-        | Gitea -> "gitea"
-        | Radicale -> "calendar"
-        | Rss -> "rss"
-        | Grafana -> "grafana"
-        | Woodpecker -> "woodpecker"
-        | WoodpeckerAgent -> "woodpecker-agent"
-        | PureGym -> "puregym"
-        | Whisper -> "whisper"
+        | WellKnownSubdomain.Nextcloud -> "nextcloud"
+        | WellKnownSubdomain.Apps -> "apps"
+        | WellKnownSubdomain.Gitea -> "gitea"
+        | WellKnownSubdomain.Radicale -> "calendar"
+        | WellKnownSubdomain.Rss -> "rss"
+        | WellKnownSubdomain.Grafana -> "grafana"
+        | WellKnownSubdomain.Woodpecker -> "woodpecker"
+        | WellKnownSubdomain.WoodpeckerAgent -> "woodpecker-agent"
+        | WellKnownSubdomain.PureGym -> "puregym"
+        | WellKnownSubdomain.Whisper -> "whisper"
 
     static member Parse (s : string) =
         match s with
+        | "apps" -> WellKnownSubdomain.Apps
         | "nextcloud" -> WellKnownSubdomain.Nextcloud
         | "gitea" -> WellKnownSubdomain.Gitea
         | "calendar" -> WellKnownSubdomain.Radicale
