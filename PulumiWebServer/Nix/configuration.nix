@@ -7,6 +7,7 @@
 in {
   imports = [
     ./sops.nix
+    ./apps/apps.nix
     ./radicale/radicale-config.nix
     ./gitea/gitea-config.nix
     ./miniflux/miniflux.nix
@@ -43,6 +44,8 @@ in {
   services.prometheus-config.domain-exporter-domains = [userConfig.domain];
   services.puregym-config.domain = userConfig.domain;
   services.puregym-config.subdomain = "puregym";
+  services.apps-config.subdomain = "apps";
+  services.apps-config.domain = userConfig.domain;
   # services.whisper-config.domain = userConfig.domain;
   # services.whisper-config.subdomain = "whisper";
 

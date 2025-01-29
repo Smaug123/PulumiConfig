@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <textarea id="input" rows="10" cols="50"></textarea><br>
+    <button onclick="analyzeText()">Ok</button>
+    <div id="result"></div>
+
+    <script>
+        function analyzeText() {
+            const text = document.getElementById('input').value;
+            const words = text.trim().split(' ').filter(word => word.length > 0);
+            const count = words.length;
+            const result = `Word count: ${count}`;
+
+            if (count % 2 === 1) {
+                const middleWord = words[Math.floor(count/2)];
+                document.getElementById('result').textContent =
+                    `${result}\nMiddle word: ${middleWord}`;
+            } else {
+                document.getElementById('result').textContent = result;
+            }
+        }
+    </script>
+</body>
+</html>
