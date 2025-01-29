@@ -22,8 +22,7 @@
       };
     };
   };
-  config =
-  {
+  config = {
     services.nginx.virtualHosts."${config.services.apps-config.subdomain}.${config.services.apps-config.domain}" = {
       forceSSL = true;
       enableACME = true;
@@ -31,4 +30,3 @@
     };
   };
 }
-
