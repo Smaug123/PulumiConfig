@@ -1,4 +1,4 @@
-﻿namespace PulumiWebServer
+namespace PulumiWebServer
 
 open System.Net.Http
 open Nager.PublicSuffix
@@ -115,6 +115,15 @@ module Program =
                         (BashString.make "/tmp/networking.nix")
                     |> fun c -> c.Stdout
 
+                // TODO: do this properly via Command
+                keys
+                |> Array.map (fun k -> k.PublicKeyContents)
+                |> Array.collect (fun s -> s.Split "\n")
+                |> JsonConvert.SerializeObject
+                |> fun s -> File.WriteAllText ("/tmp/ssh-keys.json", s)
+
+                Log.Info "Stored SSH keys at /tmp/ssh-keys.json"
+
                 let pullHardware =
                     Command.pullFile
                         config.PrivateKey
@@ -129,15 +138,6 @@ module Program =
                 Log.Info "Networking configuration at /tmp/networking.nix"
                 let! _ = pullHardware
                 Log.Info "Hardware configuration at /tmp/hardware.nix"
-
-                // TODO: do this properly via Command
-                keys
-                |> Array.map (fun k -> k.PublicKeyContents)
-                |> Array.collect (fun s -> s.Split "\n")
-                |> JsonConvert.SerializeObject
-                |> fun s -> File.WriteAllText ("/tmp/ssh-keys.json", s)
-
-                Log.Info "Stored SSH keys at /tmp/ssh-keys.json"
 
                 // The nixos rebuild has blatted the known public key.
                 let! _ = (Local.forgetKey (address.Get ())).Stdout
