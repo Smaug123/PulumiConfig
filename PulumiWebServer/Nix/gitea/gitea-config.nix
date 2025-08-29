@@ -64,6 +64,9 @@
           RENDER_COMMAND = ''${docutils}/bin/rst2html.py'';
           IS_INPUT_FILE = false;
         };
+        repository = {
+          DISABLE_DOWNLOAD_SOURCE_ARCHIVES = true;
+        };
       };
     };
 
