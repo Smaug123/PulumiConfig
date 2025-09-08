@@ -90,6 +90,15 @@
       };
     };
 
+    system.activationScripts = {
+      gitea-robots-txt = ''
+        mkdir -p /preserve/gitea/data/custom/public
+        cp ${./robots.txt} /preserve/gitea/data/custom/public/robots.txt
+        chown gitea:gitea /preserve/gitea/data/custom/public/robots.txt
+        chmod 644 /preserve/gitea/data/custom/public/robots.txt
+      '';
+    };
+
     # The Gitea module does not allow adding users declaratively
     systemd.services.gitea-add-user = {
       description = "gitea-add-user";
