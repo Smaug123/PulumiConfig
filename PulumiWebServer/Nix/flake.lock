@@ -100,11 +100,11 @@
         "systems": "systems_3"
       },
       "locked": {
-        "lastModified": 1726560853,
-        "narHash": "sha256-X6rJYSESBVr3hBoH0WbKE5KvhPU5bloyZ2L4K60/fPQ=",
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
         "owner": "numtide",
         "repo": "flake-utils",
-        "rev": "c1dfcf08411b08f6b8615f7d8971a2bfa81d5e8a",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
         "type": "github"
       },
       "original": {
@@ -156,11 +156,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1735053786,
-        "narHash": "sha256-Gm+0DcbUS338vvkwyYWms5jsWlx8z8MeQBzcnIDuIkw=",
+        "lastModified": 1757256385,
+        "narHash": "sha256-WK7tOhWwr15mipcckhDg2no/eSpM1nIh4C9le8HgHhk=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "35b98d20ca8f4ca1f6a2c30b8a2c8bb305a36d84",
+        "rev": "f35703b412c67b48e97beb6e27a6ab96a084cd37",
         "type": "github"
       },
       "original": {
@@ -229,11 +229,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1734649271,
-        "narHash": "sha256-4EVBRhOjMDuGtMaofAIqzJbg4Ql7Ai0PSeuVZTHjyKQ=",
+        "lastModified": 1757068644,
+        "narHash": "sha256-NOrUtIhTkIIumj1E/Rsv1J37Yi3xGStISEo8tZm3KW4=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "d70bd19e0a38ad4790d3913bf08fcbfc9eeca507",
+        "rev": "8eb28adfa3dc4de28e792e3bf49fcf9007ca8ac9",
         "type": "github"
       },
       "original": {
@@ -308,11 +308,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1735068435,
-        "narHash": "sha256-MrHKBHzq1tTPGJJC0wRot4huqtr5+sW8uv+Ffx4WUqk=",
+        "lastModified": 1757366940,
+        "narHash": "sha256-GFxGO40Tu65a1VZQ6z7RTMEHf9jr6TD4nuLplv17fKM=",
         "ref": "refs/heads/main",
-        "rev": "6b2ebdffba31ae37a897c2f2f3d7534041b52ca6",
-        "revCount": 20,
+        "rev": "2ca8c5e43b7b77c1e6208e2ae996192e0c820e74",
+        "revCount": 21,
         "type": "git",
         "url": "https://gitea.patrickstevens.co.uk/patrick/puregym-unofficial-dotnet"
       },
@@ -398,11 +398,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1734546875,
-        "narHash": "sha256-6OvJbqQ6qPpNw3CA+W8Myo5aaLhIJY/nNFDk3zMXLfM=",
+        "lastModified": 1754988908,
+        "narHash": "sha256-t+voe2961vCgrzPFtZxha0/kmFSHFobzF00sT8p9h0U=",
         "owner": "Mic92",
         "repo": "sops-nix",
-        "rev": "ed091321f4dd88afc28b5b4456e0a15bd8374b4d",
+        "rev": "3223c7a92724b5d804e9988c6b447a0d09017d48",
         "type": "github"
       },
       "original": {
@@ -500,11 +500,11 @@
         "scripts": "scripts_4"
       },
       "locked": {
-        "lastModified": 1732825076,
-        "narHash": "sha256-EfywHLXIizb9UjxIKzuEeaSXmPjkxELvQhVfNpyuiRI=",
+        "lastModified": 1756748330,
+        "narHash": "sha256-6Z/wDFdESbTwgiTnV1oBfQZ661MIgfAhD1rDKipFHbc=",
         "owner": "Smaug123",
         "repo": "static-site-pipeline",
-        "rev": "1475932c4305aa70483fb655b9f021c4d0a5a09e",
+        "rev": "9901b1dfc4274dc4d8792fcbde27861b47173dfa",
         "type": "github"
       },
       "original": {
