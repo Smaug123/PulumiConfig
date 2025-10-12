@@ -41,6 +41,72 @@
     },
     "remoteUsername": {
       "type": "string"
+    },
+    "radicaleConfig": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/definitions/SerialisedRadicaleConfig"
+        }
+      ]
+    },
+    "giteaConfig": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/definitions/SerialisedGiteaConfig"
+        }
+      ]
+    }
+  },
+  "definitions": {
+    "SerialisedRadicaleConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "user",
+        "password",
+        "gitEmail"
+      ],
+      "properties": {
+        "user": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        },
+        "gitEmail": {
+          "type": "string"
+        }
+      }
+    },
+    "SerialisedGiteaConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "serverPassword",
+        "adminPassword",
+        "adminEmailAddress",
+        "adminUsername"
+      ],
+      "properties": {
+        "serverPassword": {
+          "type": "string"
+        },
+        "adminPassword": {
+          "type": "string"
+        },
+        "adminEmailAddress": {
+          "type": "string"
+        },
+        "adminUsername": {
+          "type": "string"
+        }
+      }
     }
   }
 }

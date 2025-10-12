@@ -6,6 +6,23 @@ open System.IO
 open Newtonsoft.Json
 
 [<NoComparison>]
+type RadicaleConfig =
+    {
+        User : string
+        Password : string
+        GitEmail : string
+    }
+
+[<NoComparison>]
+type GiteaConfig =
+    {
+        ServerPassword : string
+        AdminPassword : string
+        AdminEmailAddress : string
+        AdminUsername : string
+    }
+
+[<NoComparison>]
 type Configuration =
     {
         /// Name of this server, as it will be known to Pulumi.
@@ -30,6 +47,8 @@ type Configuration =
         AcmeEmail : EmailAddress
         /// Username for the user account to be created on the server
         RemoteUsername : Username
+        RadicaleConfig : RadicaleConfig option
+        GiteaConfig : GiteaConfig option
     }
 
     member this.PublicKey =
@@ -38,6 +57,61 @@ type Configuration =
         | None ->
             let (PrivateKey k) = this.PrivateKey
             Path.Combine (k.Directory.FullName, k.Name + ".pub") |> FileInfo |> PublicKey
+
+[<NoComparison>]
+type SerialisedRadicaleConfig =
+    {
+        [<JsonProperty(Required = Required.Always)>]
+        User : string
+        [<JsonProperty(Required = Required.Always)>]
+        Password : string
+        [<JsonProperty(Required = Required.Always)>]
+        GitEmail : string
+    }
+
+    static member Make (config : RadicaleConfig) : SerialisedRadicaleConfig =
+        {
+            User = config.User
+            Password = config.Password
+            GitEmail = config.GitEmail
+        }
+
+    static member Deserialise (config : SerialisedRadicaleConfig) : RadicaleConfig =
+        {
+            User = config.User
+            Password = config.Password
+            GitEmail = config.GitEmail
+        }
+
+[<NoComparison>]
+type SerialisedGiteaConfig =
+    {
+        [<JsonProperty(Required = Required.Always)>]
+        ServerPassword : string
+        [<JsonProperty(Required = Required.Always)>]
+        AdminPassword : string
+        [<JsonProperty(Required = Required.Always)>]
+        AdminEmailAddress : string
+        [<JsonProperty(Required = Required.Always)>]
+        AdminUsername : string
+    }
+
+    static member Make (config : GiteaConfig) : SerialisedGiteaConfig =
+        {
+            ServerPassword = config.ServerPassword
+            AdminPassword = config.AdminPassword
+            AdminEmailAddress = config.AdminEmailAddress
+            AdminUsername = config.AdminUsername
+        }
+
+    static member Deserialise (config : SerialisedGiteaConfig) : GiteaConfig =
+        {
+            ServerPassword = config.ServerPassword
+            AdminPassword = config.AdminPassword
+            AdminEmailAddress = config.AdminEmailAddress
+            AdminUsername = config.AdminUsername
+        }
+
 
 [<NoComparison>]
 [<RequireQualifiedAccess>]
@@ -61,6 +135,10 @@ type SerialisedConfig =
         AcmeEmail : string
         [<JsonProperty(Required = Required.Always)>]
         RemoteUsername : string
+        [<JsonProperty(Required = Required.Default)>]
+        RadicaleConfig : SerialisedRadicaleConfig
+        [<JsonProperty(Required = Required.Default)>]
+        GiteaConfig : SerialisedGiteaConfig
     }
 
     static member Make (config : Configuration) =
@@ -82,6 +160,11 @@ type SerialisedConfig =
             Subdomains = config.Subdomains |> Seq.map (fun sub -> sub.ToString ()) |> Seq.toArray
             AcmeEmail = config.AcmeEmail.ToString ()
             RemoteUsername = config.RemoteUsername.ToString ()
+            RadicaleConfig =
+                config.RadicaleConfig
+                |> Option.map SerialisedRadicaleConfig.Make
+                |> Option.toObj
+            GiteaConfig = config.GiteaConfig |> Option.map SerialisedGiteaConfig.Make |> Option.toObj
         }
 
     static member Deserialise (config : SerialisedConfig) : Configuration =
@@ -105,6 +188,14 @@ type SerialisedConfig =
                 | subdomains -> subdomains |> Seq.map WellKnownSubdomain.Parse |> Set.ofSeq
             AcmeEmail = config.AcmeEmail |> EmailAddress
             RemoteUsername = config.RemoteUsername |> Username
+            RadicaleConfig =
+                config.RadicaleConfig
+                |> Option.ofObj
+                |> Option.map SerialisedRadicaleConfig.Deserialise
+            GiteaConfig =
+                config.GiteaConfig
+                |> Option.ofObj
+                |> Option.map SerialisedGiteaConfig.Deserialise
         }
 
 [<RequireQualifiedAccess>]

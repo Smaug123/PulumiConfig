@@ -70,6 +70,8 @@ module TestConfiguration =
                 Subdomains = Set.empty
                 AcmeEmail = EmailAddress "test@example.com"
                 RemoteUsername = Username "non-root"
+                RadicaleConfig = None
+                GiteaConfig = None
             }
 
         let serialised = SerialisedConfig.Make publicConfig
