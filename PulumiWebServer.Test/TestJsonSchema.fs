@@ -14,21 +14,22 @@ open Newtonsoft.Json.Serialization
 module TestSchema =
 
     [<Test>]
-    let ``Example conforms to schema`` () = task {
-        let executing = Assembly.GetExecutingAssembly().Location |> FileInfo
+    let ``Example conforms to schema`` () =
+        task {
+            let executing = Assembly.GetExecutingAssembly().Location |> FileInfo
 
-        let schemaFile =
-            Utils.findFileAbove "PulumiWebServer/config.schema.json" executing.Directory
+            let schemaFile =
+                Utils.findFileAbove "PulumiWebServer/config.schema.json" executing.Directory
 
-        let! schema = JsonSchema.FromJsonAsync(File.ReadAllText schemaFile.FullName)
+            let! schema = JsonSchema.FromJsonAsync (File.ReadAllText schemaFile.FullName)
 
-        let json = Utils.getEmbeddedResource typeof<Utils.Dummy>.Assembly "config.json"
+            let json = Utils.getEmbeddedResource typeof<Utils.Dummy>.Assembly "config.json"
 
-        let validator = JsonSchemaValidator ()
-        let errors = validator.Validate (json, schema)
+            let validator = JsonSchemaValidator ()
+            let errors = validator.Validate (json, schema)
 
-        errors |> shouldBeEmpty
-    }
+            errors |> shouldBeEmpty
+        }
 
     [<Test>]
     let ``Example can be loaded`` () =
