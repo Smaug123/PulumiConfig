@@ -15,19 +15,21 @@ module TestSchema =
 
     [<Test>]
     let ``Example conforms to schema`` () =
-        let executing = Assembly.GetExecutingAssembly().Location |> FileInfo
+        task {
+            let executing = Assembly.GetExecutingAssembly().Location |> FileInfo
 
-        let schemaFile =
-            Utils.findFileAbove "PulumiWebServer/config.schema.json" executing.Directory
+            let schemaFile =
+                Utils.findFileAbove "PulumiWebServer/config.schema.json" executing.Directory
 
-        let schema = JsonSchema.FromJsonAsync(File.ReadAllText schemaFile.FullName).Result
+            let! schema = JsonSchema.FromJsonAsync (File.ReadAllText schemaFile.FullName)
 
-        let json = Utils.getEmbeddedResource typeof<Utils.Dummy>.Assembly "config.json"
+            let json = Utils.getEmbeddedResource typeof<Utils.Dummy>.Assembly "config.json"
 
-        let validator = JsonSchemaValidator ()
-        let errors = validator.Validate (json, schema)
+            let validator = JsonSchemaValidator ()
+            let errors = validator.Validate (json, schema)
 
-        errors |> shouldBeEmpty
+            errors |> shouldBeEmpty
+        }
 
     [<Test>]
     let ``Example can be loaded`` () =
@@ -40,8 +42,8 @@ module TestSchema =
             writer.WriteLine config
             writer.Flush ()
 
-        stream.Seek (0L, SeekOrigin.Begin) |> ignore
-        Configuration.get stream |> ignore
+        stream.Seek (0L, SeekOrigin.Begin) |> ignore<int64>
+        Configuration.get stream |> ignore<Configuration>
 
     [<Test>]
     [<Explicit "Run this to regenerate the schema file">]
