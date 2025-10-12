@@ -87,7 +87,7 @@
     enableACME = true;
     locations."/" = {
       proxyPass = "http://localhost:${toString config.services.woodpecker-config.port}/";
-      recommendedProxySettings = false;
+      recommendedProxySettings = true;
       extraConfig = ''
         proxy_redirect off;
         proxy_http_version 1.1;
