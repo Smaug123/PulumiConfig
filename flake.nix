@@ -62,6 +62,7 @@
                 pkgs.ssh-to-age
                 pkgs.nixos-rebuild
                 pkgs.gnused
+                pkgs.xmlstarlet
               ]
               ++ requirements;
             shellHook = ''
