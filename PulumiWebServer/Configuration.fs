@@ -160,7 +160,10 @@ type SerialisedConfig =
             Subdomains = config.Subdomains |> Seq.map (fun sub -> sub.ToString ()) |> Seq.toArray
             AcmeEmail = config.AcmeEmail.ToString ()
             RemoteUsername = config.RemoteUsername.ToString ()
-            RadicaleConfig = config.RadicaleConfig |> Option.map SerialisedRadicaleConfig.Make |> Option.toObj
+            RadicaleConfig =
+                config.RadicaleConfig
+                |> Option.map SerialisedRadicaleConfig.Make
+                |> Option.toObj
             GiteaConfig = config.GiteaConfig |> Option.map SerialisedGiteaConfig.Make |> Option.toObj
         }
 
@@ -185,8 +188,14 @@ type SerialisedConfig =
                 | subdomains -> subdomains |> Seq.map WellKnownSubdomain.Parse |> Set.ofSeq
             AcmeEmail = config.AcmeEmail |> EmailAddress
             RemoteUsername = config.RemoteUsername |> Username
-            RadicaleConfig = config.RadicaleConfig |> Option.ofObj |> Option.map SerialisedRadicaleConfig.Deserialise
-            GiteaConfig = config.GiteaConfig |> Option.ofObj |> Option.map SerialisedGiteaConfig.Deserialise
+            RadicaleConfig =
+                config.RadicaleConfig
+                |> Option.ofObj
+                |> Option.map SerialisedRadicaleConfig.Deserialise
+            GiteaConfig =
+                config.GiteaConfig
+                |> Option.ofObj
+                |> Option.map SerialisedGiteaConfig.Deserialise
         }
 
 [<RequireQualifiedAccess>]
