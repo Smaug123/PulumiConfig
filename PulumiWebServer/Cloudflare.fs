@@ -1,23 +1,22 @@
 namespace PulumiWebServer
 
-open System.Net.Http
 open Nager.PublicSuffix
-open Nager.PublicSuffix.RuleProviders
 open Pulumi
 open Pulumi.Cloudflare
+open Pulumi.Cloudflare.Inputs
 
 [<RequireQualifiedAccess>]
 type ARecord =
     {
-        IPv4 : Record option
-        IPv6 : Record option
+        IPv4 : DnsRecord option
+        IPv6 : DnsRecord option
     }
 
 type Cname =
     {
         Source : string
         Target : string
-        Record : Record
+        Record : DnsRecord
     }
 
 type DnsRecord =
@@ -29,7 +28,7 @@ module Cloudflare =
 
     let getZone (DomainName domain) : Output<ZoneId> =
         let args = GetZoneInvokeArgs ()
-        args.Name <- domain
+        args.Filter <- GetZoneFilterInputArgs (Name = domain, Match = "any")
 
         output {
             let! zone = GetZone.Invoke args
@@ -42,26 +41,26 @@ module Cloudflare =
             | None -> None
             | Some ipv6Addr ->
 
-                let args = RecordArgs ()
+                let args = DnsRecordArgs ()
                 args.ZoneId <- Input.lift zone
                 args.Name <- Input.lift name
                 args.Ttl <- Input.lift 60
                 args.Type <- Input.lift "AAAA"
-                args.Value <- Input.lift ipv6Addr
-                Record ($"{name}-ipv6", args) |> Some
+                args.Content <- Input.lift ipv6Addr
+                DnsRecord ($"{name}-ipv6", args) |> Some
 
         let v4 =
             match ipAddress.IPv4 with
             | None -> None
             | Some ipv4Addr ->
 
-                let args = RecordArgs ()
+                let args = DnsRecordArgs ()
                 args.ZoneId <- Input.lift zone
                 args.Name <- Input.lift name
                 args.Ttl <- Input.lift 60
                 args.Type <- Input.lift "A"
-                args.Value <- Input.lift ipv4Addr
-                Record ($"{name}-ipv4", args) |> Some
+                args.Content <- Input.lift ipv4Addr
+                DnsRecord ($"{name}-ipv4", args) |> Some
 
         {
             ARecord.IPv4 = v4
@@ -93,16 +92,16 @@ module Cloudflare =
             |> Seq.map (fun (cname, target) ->
                 let source = $"{cname.ToString ()}{subdomainMarker}"
                 let target = WellKnownCnameTarget.Reify domain target
-                let args = RecordArgs ()
+                let args = DnsRecordArgs ()
                 args.ZoneId <- Input.lift zone
                 args.Name <- Input.lift source
                 args.Ttl <- Input.lift 60
                 args.Type <- Input.lift "CNAME"
-                args.Value <- Input.lift target
+                args.Content <- Input.lift target
 
                 source,
                 {
-                    Record = Record ($"{cname}{subdomainMarker}-cname", args)
+                    Record = DnsRecord ($"{cname}{subdomainMarker}-cname", args)
                     Source = source
                     Target = target
                 }
