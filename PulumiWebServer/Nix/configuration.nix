@@ -9,6 +9,7 @@ in {
     ./sops.nix
     ./apps/apps.nix
     ./radicale/radicale-config.nix
+    ./syncthing/syncthing-config.nix
     ./gitea/gitea-config.nix
     ./miniflux/miniflux.nix
     ./userconfig.nix
@@ -48,6 +49,8 @@ in {
   services.apps-config.domain = userConfig.domain;
   # services.whisper-config.domain = userConfig.domain;
   # services.whisper-config.subdomain = "whisper";
+  services.syncthing-config.subdomain = "syncthing";
+  services.syncthing-config.domain = userConfig.domain;
 
   services.journald.extraConfig = "SystemMaxUse=100M";
 
