@@ -25,6 +25,7 @@ in {
     # ./whisper/whisper.nix
   ];
 
+  services.radicale-config.enable = true;
   services.radicale-config.domain = userConfig.domain;
   services.radicale-config.subdomain = "calendar";
   services.radicale-config.enableGit = true;

@@ -12,10 +12,6 @@
     "gitea_woodpecker_oauth_id" = {owner = "gitea";};
     "gitea_woodpecker_secret" = {owner = "gitea";};
     "woodpecker_agent_secret" = {owner = "gitea";};
-    "radicale_user" = {owner = "radicale";};
-    "radicale_htcrypt_password" = {owner = "radicale";};
-    "radicale_password" = {owner = "radicale";};
-    "radicale_git_email" = {owner = "radicale";};
     "grafana_admin_password" = {owner = "grafana";};
     "grafana_secret_key" = {owner = "grafana";};
   };
