@@ -1,2 +1,2 @@
-User-agent: GPTBot
+User-agent: *
 Disallow: /
