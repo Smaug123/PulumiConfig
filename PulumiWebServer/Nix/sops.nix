@@ -12,7 +12,5 @@
     "gitea_woodpecker_oauth_id" = {owner = "gitea";};
     "gitea_woodpecker_secret" = {owner = "gitea";};
     "woodpecker_agent_secret" = {owner = "gitea";};
-    "grafana_admin_password" = {owner = "grafana";};
-    "grafana_secret_key" = {owner = "grafana";};
   };
 }

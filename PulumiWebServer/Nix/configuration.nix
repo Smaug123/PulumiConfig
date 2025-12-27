@@ -44,6 +44,7 @@ in {
   # A small pun here: we assume that the Gitea/Woodpecker username
   # is the same as the remote username.
   services.woodpecker-config.admin-users = [userConfig.remoteUsername];
+  services.grafana-config.enable = true;
   services.grafana-config.domain = userConfig.domain;
   services.prometheus-config.domain-exporter-domains = [userConfig.domain];
   services.puregym-config.enable = true;
