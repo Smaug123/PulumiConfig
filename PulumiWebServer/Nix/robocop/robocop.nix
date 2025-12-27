@@ -39,6 +39,7 @@
         User = "robocop";
         Group = "robocop";
         ExecStart = "${robocop}/bin/robocop-server";
+        Environment = "PORT=${toString config.services.robocop-config.port}";
         NoNewPrivileges = true;
         ProtectSystem = "strict";
         ProtectHome = true;
