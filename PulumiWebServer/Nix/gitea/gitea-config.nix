@@ -3,27 +3,35 @@
   pkgs,
   lib,
   ...
-}: {
-  options = {
-    services.gitea-config = {
-      domain = lib.mkOption {
-        type = lib.types.str;
-        example = "example.com";
-        description = lib.mdDoc "Top-level domain to configure";
-      };
-      subdomain = lib.mkOption {
-        type = lib.types.str;
-        example = "gitea";
-        description = lib.mdDoc "Subdomain in which to put Gitea";
-      };
-      port = lib.mkOption {
-        type = lib.types.port;
-        description = lib.mdDoc "Gitea localhost port";
-        default = 3001;
-      };
+}: let
+  cfg = config.services.gitea-config;
+in {
+  options.services.gitea-config = {
+    enable = lib.mkEnableOption "Gitea git server";
+    domain = lib.mkOption {
+      type = lib.types.str;
+      example = "example.com";
+      description = lib.mdDoc "Top-level domain to configure";
+    };
+    subdomain = lib.mkOption {
+      type = lib.types.str;
+      example = "gitea";
+      description = lib.mdDoc "Subdomain in which to put Gitea";
+    };
+    port = lib.mkOption {
+      type = lib.types.port;
+      description = lib.mdDoc "Gitea localhost port";
+      default = 3001;
     };
   };
-  config = {
+
+  config = lib.mkIf cfg.enable {
+    sops.secrets = {
+      "gitea_server_password" = {owner = "gitea";};
+      "gitea_admin_password" = {owner = "gitea";};
+      "gitea_admin_username" = {owner = "gitea";};
+      "gitea_admin_email" = {owner = "gitea";};
+    };
     users.users."gitea".extraGroups = [config.users.groups.keys.name];
     services.gitea = {
       enable = true;
@@ -43,12 +51,12 @@
       in {
         mailer = {
           ENABLED = true;
-          FROM = "gitea@" + config.services.gitea-config.domain;
+          FROM = "gitea@" + cfg.domain;
         };
         server = {
-          ROOT_URL = "https://${config.services.gitea-config.subdomain}.${config.services.gitea-config.domain}/";
-          HTTP_PORT = config.services.gitea-config.port;
-          DOMAIN = "${config.services.gitea-config.subdomain}.${config.services.gitea-config.domain}";
+          ROOT_URL = "https://${cfg.subdomain}.${cfg.domain}/";
+          HTTP_PORT = cfg.port;
+          DOMAIN = "${cfg.subdomain}.${cfg.domain}";
         };
         service = {
           REGISTER_EMAIL_CONFIRM = true;
@@ -82,11 +90,11 @@
       '';
     };
 
-    services.nginx.virtualHosts."${config.services.gitea-config.subdomain}.${config.services.gitea-config.domain}" = {
+    services.nginx.virtualHosts."${cfg.subdomain}.${cfg.domain}" = {
       forceSSL = true;
       enableACME = true;
       locations."/" = {
-        proxyPass = "http://localhost:${toString config.services.gitea-config.port}/";
+        proxyPass = "http://localhost:${toString cfg.port}/";
       };
     };
 

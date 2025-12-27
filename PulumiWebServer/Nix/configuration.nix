@@ -35,6 +35,7 @@ in {
   services.nginx-config.email = userConfig.acmeEmail;
   services.nginx-config.webrootSubdomain = "www";
   services.nginx-config.staging = true;
+  services.gitea-config.enable = true;
   services.gitea-config.subdomain = "gitea";
   services.gitea-config.domain = userConfig.domain;
   services.miniflux-config.enable = true;
