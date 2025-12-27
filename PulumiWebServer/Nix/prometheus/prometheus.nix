@@ -3,45 +3,46 @@
   pkgs,
   lib,
   ...
-}: {
-  options = {
-    services.prometheus-config = {
-      port = lib.mkOption {
-        type = lib.types.port;
-        description = lib.mdDoc "Prometheus localhost port";
-        default = 9002;
-      };
-      node-exporter-port = lib.mkOption {
-        type = lib.types.port;
-        description = lib.mdDoc "Localhost port for node exporter";
-        default = 9003;
-      };
-      domain-exporter-domains = lib.mkOption {
-        type = lib.types.listOf lib.types.str;
-        description = lib.mdDoc "Paths to be interpolated into the domain-exporter config.";
-        example = "example.com";
-      };
+}: let
+  cfg = config.services.prometheus-config;
+in {
+  options.services.prometheus-config = {
+    enable = lib.mkEnableOption "Prometheus monitoring";
+    port = lib.mkOption {
+      type = lib.types.port;
+      description = lib.mdDoc "Prometheus localhost port";
+      default = 9002;
+    };
+    node-exporter-port = lib.mkOption {
+      type = lib.types.port;
+      description = lib.mdDoc "Localhost port for node exporter";
+      default = 9003;
+    };
+    domain-exporter-domains = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      description = lib.mdDoc "Domains to be interpolated into the domain-exporter config.";
+      example = ["example.com"];
     };
   };
 
-  config = {
+  config = lib.mkIf cfg.enable {
     # For the domain exporter
     environment.etc."domain-exporter/domains.yaml" = {
       text = let
-        interp = builtins.concatStringsSep "\", \"" config.services.prometheus-config.domain-exporter-domains;
+        interp = builtins.concatStringsSep "\", \"" cfg.domain-exporter-domains;
       in
         builtins.replaceStrings ["%%DOMAINS%%"] [interp] (builtins.readFile ./domains.yaml);
     };
 
     services.prometheus = {
       enable = true;
-      port = config.services.prometheus-config.port;
+      port = cfg.port;
       retentionTime = "60d";
       exporters = {
         node = {
           enable = true;
           enabledCollectors = ["systemd"];
-          port = config.services.prometheus-config.node-exporter-port;
+          port = cfg.node-exporter-port;
         };
         nginx = {
           enable = true;
