@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bracket City</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        
+        .date {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .puzzle-container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            line-height: 1.8;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        
+        .bracket {
+            color: #0066cc;
+            font-weight: 500;
+        }
+        
+        .bracket.leaf {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            cursor: help;
+        }
+        
+        .bracket.solved {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .bracket.solved.revealed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .bracket.peeked {
+            background: #ffeaa7;
+        }
+        
+        .input-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #0066cc;
+        }
+        
+        button {
+            padding: 12px 24px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background: #0052a3;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .stats > div {
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+        }
+        
+        .final-stats {
+            background: #cfe2ff;
+            color: #084298;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .final-stats h3 {
+            margin-top: 0;
+            text-align: center;
+        }
+        
+        .final-stats .stat-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .final-stats .stat-row:last-child {
+            border-bottom: none;
+        }
+        
+        .message {
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 4px;
+            text-align: center;
+            transition: opacity 0.3s;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .message.victory {
+            background: #cfe2ff;
+            color: #084298;
+            font-weight: bold;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Bracket City</h1>
+    <div class="date" id="date"></div>
+    
+    <div class="puzzle-container" id="puzzle"></div>
+    
+    <div class="input-container">
+        <input type="text" id="answer-input" placeholder="Enter your answer..." autocomplete="off">
+        <button onclick="submitAnswer()">Submit</button>
+    </div>
+    
+    <div class="stats" id="stats">
+        <div>Clues available: <strong id="remaining">0</strong></div>
+        <div>Clues solved: <strong id="solved">0</strong></div>
+        <div>Incorrect guesses: <strong id="incorrect">0</strong></div>
+        <div>Hints used: <strong id="hints">0</strong></div>
+    </div>
+    
+    <div id="message"></div>
+
+    <script>
+        // Default puzzle to use when no URL parameter is provided
+        const defaultPuzzle = {
+            date: "Welcome to Bracket City",
+            headline: "No puzzle loaded",
+            puzzle: [
+                { type: 'text', value: 'Please use the ' },
+                { 
+                    type: 'bracket', 
+                    answer: 'builder',
+                    clue: [{ type: 'text', value: 'tool to create puzzles' }]
+                },
+                { type: 'text', value: ' to create a puzzle!' }
+            ]
+        };
+
+        let currentPuzzle = null;
+        let gameStats = {
+            correctlySolved: 0,    // Clues solved by typing
+            incorrectGuesses: 0,   // Wrong answers submitted
+            firstLetterPeeks: 0,   // Times first letter was peeked
+            answersRevealed: 0,    // Clues revealed via double-click
+            totalClues: 0          // Total number of clues in puzzle
+        };
+
+        function initializePuzzle(puzzleData) {
+            // Deep clone the puzzle and add solved states
+            currentPuzzle = JSON.parse(JSON.stringify(puzzleData));
+            addSolvedStates(currentPuzzle.puzzle);
+            
+            // Reset game stats
+            gameStats = {
+                correctlySolved: 0,
+                incorrectGuesses: 0,
+                firstLetterPeeks: 0,
+                answersRevealed: 0,
+                totalClues: countBrackets(currentPuzzle.puzzle)
+            };
+            
+            document.getElementById('date').textContent = currentPuzzle.date;
+            renderPuzzle();
+            updateStats();
+        }
+
+        function addSolvedStates(nodes) {
+            if (!nodes) return;
+            nodes.forEach(node => {
+                if (node.type === 'bracket') {
+                    node.solved = false;
+                    node.peeked = false;
+                    node.revealed = false;  // Track if answer was revealed vs typed
+                    addSolvedStates(node.clue);
+                }
+            });
+        }
+
+        function renderPuzzle() {
+            const container = document.getElementById('puzzle');
+            container.innerHTML = renderNodes(currentPuzzle.puzzle);
+        }
+
+        function renderNodes(nodes, isRoot = true) {
+            if (!nodes) return '';
+            
+            return nodes.map((node, index) => {
+                if (node.type === 'text') {
+                    return node.value;
+                } else if (node.type === 'bracket') {
+                    const isLeaf = isLeafBracket(node);
+                    const classes = ['bracket'];
+                    
+                    if (isLeaf && !node.solved) {
+                        classes.push('leaf');
+                    }
+                    if (node.solved) {
+                        classes.push('solved');
+                        if (node.revealed) {
+                            classes.push('revealed');
+                        }
+                    }
+                    if (node.peeked && !node.solved) {
+                        classes.push('peeked');
+                    }
+                    
+                    if (node.solved) {
+                        return `<span class="${classes.join(' ')}">${node.answer}</span>`;
+                    } else {
+                        let clueContent = renderNodes(node.clue, false);
+                        const dataId = `bracket-${Math.random().toString(36).substr(2, 9)}`;
+                        node.dataId = dataId;
+                        
+                        // Add first letter hint if peeked
+                        if (node.peeked && isLeaf) {
+                            clueContent = `${node.answer[0]}... ${clueContent}`;
+                        }
+                        
+                        if (isLeaf && !node.solved) {
+                            return `<span class="${classes.join(' ')}" data-id="${dataId}" onclick="handleBracketClick('${dataId}')">[${clueContent}]</span>`;
+                        } else {
+                            return `<span class="${classes.join(' ')}">[${clueContent}]</span>`;
+                        }
+                    }
+                }
+            }).join('');
+        }
+
+        function isLeafBracket(node) {
+            if (node.type !== 'bracket') return false;
+            if (node.solved) return false;
+            
+            // A bracket is a leaf if its clue contains no unsolved brackets
+            return !node.clue.some(child => 
+                child.type === 'bracket' && !child.solved
+            );
+        }
+
+        function getLeafBrackets(nodes, leaves = []) {
+            if (!nodes) return leaves;
+            
+            nodes.forEach(node => {
+                if (node.type === 'bracket' && !node.solved) {
+                    if (isLeafBracket(node)) {
+                        leaves.push(node);
+                    } else {
+                        getLeafBrackets(node.clue, leaves);
+                    }
+                }
+            });
+            
+            return leaves;
+        }
+
+        function submitAnswer() {
+            const input = document.getElementById('answer-input');
+            const answer = input.value.trim();
+            
+            if (!answer) return;
+            
+            const leaves = getLeafBrackets(currentPuzzle.puzzle);
+            let found = false;
+            
+            leaves.forEach(leaf => {
+                if (leaf.answer.toLowerCase() === answer.toLowerCase()) {
+                    leaf.solved = true;
+                    leaf.revealed = false;  // Mark as correctly typed
+                    found = true;
+                }
+            });
+            
+            if (found) {
+                gameStats.correctlySolved++;
+                showMessage('Correct!', 'success');
+                input.value = '';
+                renderPuzzle();
+                updateStats();
+                
+                // Check for victory
+                if (getLeafBrackets(currentPuzzle.puzzle).length === 0) {
+                    showVictoryMessage();
+                }
+            } else {
+                gameStats.incorrectGuesses++;
+                showMessage('Not found in any remaining clues', 'error');
+                updateStats();
+            }
+        }
+
+        function updateStats() {
+            const leaves = getLeafBrackets(currentPuzzle.puzzle);
+            const totalBrackets = countBrackets(currentPuzzle.puzzle);
+            const solvedCount = countSolvedBrackets(currentPuzzle.puzzle);
+            
+            document.getElementById('remaining').textContent = leaves.length;
+            document.getElementById('solved').textContent = `${solvedCount}/${totalBrackets}`;
+            document.getElementById('incorrect').textContent = gameStats.incorrectGuesses;
+            document.getElementById('hints').textContent = gameStats.firstLetterPeeks + gameStats.answersRevealed;
+        }
+
+        function countBrackets(nodes) {
+            if (!nodes) return 0;
+            let count = 0;
+            
+            nodes.forEach(node => {
+                if (node.type === 'bracket') {
+                    count++;
+                    count += countBrackets(node.clue);
+                }
+            });
+            
+            return count;
+        }
+
+        function countSolvedBrackets(nodes) {
+            if (!nodes) return 0;
+            let count = 0;
+            
+            nodes.forEach(node => {
+                if (node.type === 'bracket') {
+                    if (node.solved) count++;
+                    count += countSolvedBrackets(node.clue);
+                }
+            });
+            
+            return count;
+        }
+
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type}`;
+            
+            if (type !== 'victory') {
+                setTimeout(() => {
+                    messageEl.style.opacity = '0';
+                    setTimeout(() => {
+                        messageEl.textContent = '';
+                        messageEl.className = 'message';
+                        messageEl.style.opacity = '1';
+                    }, 300);
+                }, 2000);
+            }
+        }
+        
+        function findBracketByDataId(nodes, dataId) {
+            if (!nodes) return null;
+            
+            for (const node of nodes) {
+                if (node.type === 'bracket') {
+                    if (node.dataId === dataId) {
+                        return node;
+                    }
+                    const found = findBracketByDataId(node.clue, dataId);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+        
+        function handleBracketClick(dataId) {
+            const bracket = findBracketByDataId(currentPuzzle.puzzle, dataId);
+            if (!bracket || bracket.solved) return;
+            
+            if (bracket.peeked) {
+                // Second click - reveal full answer
+                const confirmReveal = confirm(`Reveal the full answer?`);
+                if (confirmReveal) {
+                    bracket.solved = true;
+                    bracket.revealed = true;  // Mark as revealed
+                    gameStats.answersRevealed++;
+                    renderPuzzle();
+                    updateStats();
+                    showMessage('Answer revealed!', 'error');
+                    
+                    // Check for victory
+                    if (getLeafBrackets(currentPuzzle.puzzle).length === 0) {
+                        showVictoryMessage();
+                    }
+                }
+            } else {
+                // First click - peek first letter
+                const confirmPeek = confirm(`Peek at the first letter?`);
+                if (confirmPeek) {
+                    bracket.peeked = true;
+                    gameStats.firstLetterPeeks++;
+                    renderPuzzle();
+                    updateStats();
+                }
+            }
+        }
+
+        // Handle Enter key
+        document.getElementById('answer-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                submitAnswer();
+            }
+        });
+
+        function showVictoryMessage() {
+            const perfectGame = gameStats.incorrectGuesses === 0 && 
+                                gameStats.firstLetterPeeks === 0 && 
+                                gameStats.answersRevealed === 0;
+            
+            let message = '🎉 Puzzle Complete! 🎉';
+            if (perfectGame) {
+                message = '🏆 PERFECT GAME! 🏆';
+            }
+            
+            showMessage(message, 'victory');
+            
+            const score = calculateScore();
+            const rank = getRank(score);
+            
+            // Generate score bar
+            const scoreBar = generateScoreBar(score);
+            
+            // Show final stats in the sample format
+            const finalStatsHtml = `
+                <div class="final-stats">
+                    <h3>Rank: ${rank.emoji} (${rank.title})</h3>
+                    ${gameStats.incorrectGuesses > 0 ? `<div>❌ Wrong guesses: ${gameStats.incorrectGuesses}</div>` : ''}
+                    ${gameStats.firstLetterPeeks > 0 ? `<div>👀 Peeks: ${gameStats.firstLetterPeeks}</div>` : ''}
+                    ${gameStats.answersRevealed > 0 ? `<div>🛟 Answers Revealed: ${gameStats.answersRevealed}</div>` : ''}
+                    <div style="margin-top: 10px; font-weight: bold;">Total Score: ${score.toFixed(1)}</div>
+                    <div style="margin-top: 5px; font-family: monospace; font-size: 20px;">${scoreBar}</div>
+                    <button onclick="copyToClipboard()" style="margin-top: 15px; padding: 8px 16px; font-size: 14px; cursor: pointer; background-color: #4CAF50; color: white; border: none; border-radius: 4px;">Copy to Clipboard</button>
+                </div>
+            `;
+            
+            // Insert final stats after the message
+            const messageEl = document.getElementById('message');
+            messageEl.insertAdjacentHTML('afterend', finalStatsHtml);
+        }
+        
+        function calculateScore() {
+            // Calculate a score based on performance
+            const baseScore = 100;
+            const incorrectPenalty = gameStats.incorrectGuesses * 2;
+            const peekPenalty = gameStats.firstLetterPeeks * 5;
+            const revealPenalty = gameStats.answersRevealed * 15;
+            
+            const score = Math.max(0, baseScore - incorrectPenalty - peekPenalty - revealPenalty);
+            return score;
+        }
+        
+        function getRank(score) {
+            if (score === 100) {
+                return { emoji: '👑', title: 'Kingmaker' };
+            } else if (score >= 90) {
+                return { emoji: '💼', title: 'Power Broker' };
+            } else if (score >= 80) {
+                return { emoji: '🎖', title: 'Mayor' };
+            } else if (score >= 70) {
+                return { emoji: '👮', title: 'Chief of Police' };
+            } else {
+                return { emoji: '🏛', title: 'Council Member' };
+            }
+        }
+        
+        function generateScoreBar(score) {
+            const totalBlocks = 10;
+            const filledBlocks = Math.round(score / 10);
+            const whiteBlocks = totalBlocks - filledBlocks;
+            
+            // Choose color based on score range
+            let coloredBlock;
+            if (score >= 90) {
+                coloredBlock = '🟩';  // Green for high scores
+            } else if (score >= 70) {
+                coloredBlock = '🟨';  // Yellow for medium scores
+            } else {
+                coloredBlock = '🟨';  // Yellow for lower scores too
+            }
+            
+            let bar = '';
+            for (let i = 0; i < filledBlocks; i++) {
+                bar += coloredBlock;
+            }
+            for (let i = 0; i < whiteBlocks; i++) {
+                bar += '⬜';
+            }
+            
+            return bar;
+        }
+        
+        function copyToClipboard() {
+            const finalStatsDiv = document.querySelector('.final-stats');
+            if (!finalStatsDiv) return;
+            
+            // Extract the text content for clipboard
+            const score = calculateScore();
+            const rank = getRank(score);
+            const scoreBar = generateScoreBar(score);
+            
+            let clipboardText = `Bracket City\n`;
+            clipboardText += `Rank: ${rank.emoji} (${rank.title})\n`;
+            
+            if (gameStats.incorrectGuesses > 0) {
+                clipboardText += `❌ Wrong guesses: ${gameStats.incorrectGuesses}\n`;
+            }
+            if (gameStats.firstLetterPeeks > 0) {
+                clipboardText += `👀 Peeks: ${gameStats.firstLetterPeeks}\n`;
+            }
+            if (gameStats.answersRevealed > 0) {
+                clipboardText += `🛟 Answers Revealed: ${gameStats.answersRevealed}\n`;
+            }
+            
+            clipboardText += `Total Score: ${score.toFixed(1)}\n`;
+            clipboardText += scoreBar;
+            
+            // Copy to clipboard
+            navigator.clipboard.writeText(clipboardText).then(() => {
+                // Show success feedback
+                const button = finalStatsDiv.querySelector('button');
+                const originalText = button.textContent;
+                button.textContent = 'Copied!';
+                button.style.backgroundColor = '#45a049';
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.style.backgroundColor = '#4CAF50';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+                alert('Failed to copy to clipboard');
+            });
+        }
+
+        // Function to get puzzle from URL parameter or use default
+        function getPuzzleData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const encodedPuzzle = urlParams.get('puzzle');
+            
+            if (encodedPuzzle) {
+                try {
+                    // Decode base64 and parse JSON
+                    const decodedString = atob(encodedPuzzle);
+                    const decodedData = JSON.parse(decodedString);
+                    
+                    // Transform builder format to game format
+                    // Builder creates: {puzzle: [...], date: "..."}
+                    // Game expects: {date: "...", headline: "...", puzzle: [...]}
+                    return {
+                        date: decodedData.date || new Date().toLocaleDateString(),
+                        headline: decodedData.headline || "Custom Puzzle",
+                        puzzle: decodedData.puzzle || []
+                    };
+                } catch (error) {
+                    console.error('Failed to decode puzzle from URL:', error);
+                    // Fall back to default puzzle
+                    return defaultPuzzle;
+                }
+            }
+            
+            // No puzzle parameter, use default
+            return defaultPuzzle;
+        }
+
+        // Initialize the game with puzzle from URL or default
+        const puzzleToLoad = getPuzzleData();
+        initializePuzzle(puzzleToLoad);
+    </script>
+</body>
+</html>

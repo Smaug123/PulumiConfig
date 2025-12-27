@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bracket City - Puzzle Builder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .builder-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .input-panel, .output-panel {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .input-panel h2, .output-panel h2 {
+            margin-top: 0;
+            color: #555;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+
+        #source-text {
+            min-height: 150px;
+            margin-bottom: 20px;
+        }
+
+        #working-text {
+            min-height: 200px;
+            background-color: #f9f9f9;
+            margin-bottom: 10px;
+            cursor: text;
+            user-select: text;
+        }
+
+        #json-output {
+            min-height: 400px;
+            background-color: #f5f5f5;
+        }
+
+        .replacement-input {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #e8f4f8;
+            border-radius: 5px;
+            border: 1px solid #4a90e2;
+        }
+
+        .replacement-input label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .replacement-input input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .selected-text {
+            background-color: #ffd700;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin-top: 10px;
+            margin-right: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .primary-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .primary-btn:hover {
+            background-color: #45a049;
+        }
+
+        .secondary-btn {
+            background-color: #f44336;
+            color: white;
+        }
+
+        .secondary-btn:hover {
+            background-color: #da190b;
+        }
+
+        .info-text {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        .bracket-preview {
+            background-color: #e8f4f8;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: monospace;
+        }
+
+        .instructions {
+            background-color: #f0f8ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4a90e2;
+        }
+
+        .instructions h3 {
+            margin-top: 0;
+            color: #4a90e2;
+        }
+
+        .instructions ol {
+            margin: 10px 0;
+            padding-left: 25px;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Bracket City - Puzzle Builder</h1>
+
+        <div class="instructions">
+            <h3>How to Build a Puzzle</h3>
+            <ol>
+                <li>Paste or type your source text in the first text box</li>
+                <li>Click "Start Building" to begin</li>
+                <li>Select text in the working area to create a clue</li>
+                <li>Enter your clue text and click "Replace"</li>
+                <li>Continue adding clues (you can nest clues within clues!)</li>
+                <li>Copy the JSON output when you're done</li>
+            </ol>
+        </div>
+
+        <div class="builder-section">
+            <div class="input-panel">
+                <h2>Puzzle Builder</h2>
+
+                <label for="source-text"><strong>Source Text:</strong></label>
+                <textarea id="source-text" placeholder="Paste your news headline or text here...">Ryzen graphics</textarea>
+
+                <button class="primary-btn" onclick="startBuilding()">Start Building</button>
+                <button class="secondary-btn" onclick="resetBuilder()">Reset</button>
+
+                <div id="working-area" style="display: none;">
+                    <h3>Working Text:</h3>
+                    <p class="info-text">Select text below to create a clue</p>
+                    <div id="working-text"></div>
+
+                    <div class="replacement-input" id="replacement-section">
+                        <label>Selected text: <span class="selected-text" id="selected-display"></span></label>
+                        <label for="clue-input">Replace with clue:</label>
+                        <input type="text" id="clue-input" placeholder="Enter your clue here...">
+                        <button class="primary-btn" onclick="replaceSelection()">Replace</button>
+                        <button class="secondary-btn" onclick="cancelSelection()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="output-panel">
+                <h2>JSON Output</h2>
+                <p class="info-text">This JSON can be used in the game</p>
+                <textarea id="json-output" readonly placeholder="JSON output will appear here..."></textarea>
+                <button class="primary-btn" onclick="copyJSON()">Copy JSON</button>
+
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #ddd;">
+                    <h3>Share Puzzle</h3>
+                    <label for="base-url" style="display: block; margin-bottom: 5px;">Base URL:</label>
+                    <input type="text" id="base-url" placeholder="https://apps.patrickstevens.co.uk/bracket_game.html" value="https://apps.patrickstevens.co.uk/bracket_game.html" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box;">
+                    <button class="primary-btn" onclick="copyShareableURL()">Copy Shareable URL</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let puzzleStructure = null;
+        let selectedRange = null;
+        let workingElement = null;
+
+        function startBuilding() {
+            const sourceText = document.getElementById('source-text').value.trim();
+            if (!sourceText) {
+                alert('Please enter some text first');
+                return;
+            }
+
+            // Initialize puzzle structure
+            puzzleStructure = [{
+                type: 'text',
+                value: sourceText
+            }];
+
+            // Show working area
+            document.getElementById('working-area').style.display = 'block';
+            workingElement = document.getElementById('working-text');
+
+            // Enable text selection
+            workingElement.addEventListener('mouseup', handleTextSelection);
+
+            updateDisplay();
+        }
+
+        function resetBuilder() {
+            puzzleStructure = null;
+            selectedRange = null;
+            document.getElementById('source-text').value = '';
+            document.getElementById('working-area').style.display = 'none';
+            document.getElementById('replacement-section').style.display = 'none';
+            document.getElementById('json-output').value = '';
+        }
+
+        function handleTextSelection() {
+            const selection = window.getSelection();
+            const selectedText = selection.toString().trim();
+
+            if (selectedText && selection.rangeCount > 0) {
+                selectedRange = selection.getRangeAt(0);
+
+                // Check if selection is valid (within our working text)
+                if (workingElement.contains(selectedRange.commonAncestorContainer)) {
+                    document.getElementById('selected-display').textContent = selectedText;
+                    document.getElementById('clue-input').value = '';
+                    document.getElementById('replacement-section').style.display = 'block';
+                    document.getElementById('clue-input').focus();
+                }
+            }
+        }
+
+        function replaceSelection() {
+            const clueText = document.getElementById('clue-input').value.trim();
+            if (!clueText) {
+                alert('Please enter a clue');
+                return;
+            }
+
+            if (!selectedRange) {
+                alert('Please select text first');
+                return;
+            }
+
+            const selectedText = selectedRange.toString();
+
+            // Find and replace in puzzle structure
+            puzzleStructure = replaceInStructure(puzzleStructure, selectedText, clueText);
+
+            // Clear selection
+            window.getSelection().removeAllRanges();
+            selectedRange = null;
+            document.getElementById('replacement-section').style.display = 'none';
+
+            updateDisplay();
+        }
+
+        function cancelSelection() {
+            window.getSelection().removeAllRanges();
+            selectedRange = null;
+            document.getElementById('replacement-section').style.display = 'none';
+        }
+
+        function replaceInStructure(nodes, targetText, clueText) {
+            const newNodes = [];
+
+            for (const node of nodes) {
+                if (node.type === 'text') {
+                    const index = node.value.indexOf(targetText);
+                    if (index !== -1) {
+                        // Split the text node
+                        if (index > 0) {
+                            newNodes.push({
+                                type: 'text',
+                                value: node.value.substring(0, index)
+                            });
+                        }
+
+                        // Add bracket node
+                        newNodes.push({
+                            type: 'bracket',
+                            answer: targetText,
+                            clue: [{
+                                type: 'text',
+                                value: clueText
+                            }]
+                        });
+
+                        // Add remaining text if any
+                        const remainingText = node.value.substring(index + targetText.length);
+                        if (remainingText) {
+                            newNodes.push({
+                                type: 'text',
+                                value: remainingText
+                            });
+                        }
+                    } else {
+                        newNodes.push(node);
+                    }
+                } else if (node.type === 'bracket') {
+                    // Recursively process bracket's clue
+                    newNodes.push({
+                        ...node,
+                        clue: replaceInStructure(node.clue, targetText, clueText)
+                    });
+                }
+            }
+
+            return newNodes;
+        }
+
+        function updateDisplay() {
+            // Update working text display
+            workingElement.innerHTML = renderForBuilder(puzzleStructure);
+
+            // Update JSON output
+            const puzzleObject = {
+                puzzle: puzzleStructure,
+                date: new Date().toISOString().split('T')[0]
+            };
+            document.getElementById('json-output').value = JSON.stringify(puzzleObject, null, 2);
+        }
+
+        function renderForBuilder(nodes) {
+            if (!nodes) return '';
+
+            return nodes.map(node => {
+                if (node.type === 'text') {
+                    return node.value;
+                } else if (node.type === 'bracket') {
+                    const clueContent = renderForBuilder(node.clue);
+                    return `[${clueContent}]`;
+                }
+            }).join('');
+        }
+
+        function copyJSON() {
+            const jsonOutput = document.getElementById('json-output');
+            jsonOutput.select();
+            document.execCommand('copy');
+
+            // Visual feedback
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = 'Copied!';
+            setTimeout(() => {
+                button.textContent = originalText;
+            }, 2000);
+        }
+
+        function copyShareableURL() {
+            const baseUrl = document.getElementById('base-url').value.trim();
+            if (!baseUrl) {
+                alert('Please enter a base URL first');
+                return;
+            }
+
+            const jsonOutput = document.getElementById('json-output').value;
+            if (!jsonOutput) {
+                alert('Please build a puzzle first');
+                return;
+            }
+
+            try {
+                // Parse JSON to ensure it's valid
+                const puzzleData = JSON.parse(jsonOutput);
+
+                // Encode puzzle data as base64
+                const encodedPuzzle = btoa(JSON.stringify(puzzleData));
+
+                // Create full URL with query parameter
+                const separator = baseUrl.includes('?') ? '&' : '?';
+                const fullUrl = `${baseUrl}${separator}puzzle=${encodedPuzzle}`;
+
+                // Copy to clipboard
+                navigator.clipboard.writeText(fullUrl).then(() => {
+                    // Visual feedback
+                    const button = event.target;
+                    const originalText = button.textContent;
+                    button.textContent = 'Copied!';
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy:', err);
+                    // Fallback method
+                    const tempInput = document.createElement('input');
+                    tempInput.value = fullUrl;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+
+                    // Visual feedback
+                    const button = event.target;
+                    const originalText = button.textContent;
+                    button.textContent = 'Copied!';
+                    setTimeout(() => {
+                        button.textContent = originalText;
+                    }, 2000);
+                });
+            } catch (error) {
+                alert('Error processing puzzle data: ' + error.message);
+            }
+        }
+
+        // Allow Enter key in clue input
+        document.getElementById('clue-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                replaceSelection();
+            }
+        });
+    </script>
+</body>
+</html>
