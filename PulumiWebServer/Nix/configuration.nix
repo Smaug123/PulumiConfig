@@ -36,6 +36,7 @@ in {
   services.nginx-config.staging = true;
   services.gitea-config.subdomain = "gitea";
   services.gitea-config.domain = userConfig.domain;
+  services.miniflux-config.enable = true;
   services.miniflux-config.subdomain = "rss";
   services.miniflux-config.domain = userConfig.domain;
   services.woodpecker-config.domain = userConfig.domain;
