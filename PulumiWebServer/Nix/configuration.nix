@@ -59,6 +59,7 @@ in {
   services.syncthing-config.enable = true;
   services.syncthing-config.subdomain = "syncthing";
   services.syncthing-config.domain = userConfig.domain;
+  services.robocop-config.enable = true;
   services.robocop-config.subdomain = "robocop";
   services.robocop-config.domain = userConfig.domain;
 
