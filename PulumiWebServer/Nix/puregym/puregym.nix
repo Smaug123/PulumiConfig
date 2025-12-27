@@ -63,7 +63,8 @@ in {
     systemd.services.puregym-server = {
       description = "puregym-server";
       wantedBy = ["multi-user.target"];
-      wants = ["puregym-refresh-auth.target"];
+      wants = ["puregym-refresh-auth.service"];
+      after = ["puregym-refresh-auth.service"];
       serviceConfig = {
         Restart = "always";
         Type = "exec";
