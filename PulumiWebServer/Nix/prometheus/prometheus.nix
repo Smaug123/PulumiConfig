@@ -20,8 +20,8 @@ in {
     };
     domain-exporter-domains = lib.mkOption {
       type = lib.types.listOf lib.types.str;
-      description = lib.mdDoc "Paths to be interpolated into the domain-exporter config.";
-      example = "example.com";
+      description = lib.mdDoc "Domains to be interpolated into the domain-exporter config.";
+      example = ["example.com"];
     };
   };
 
