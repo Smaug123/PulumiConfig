@@ -53,6 +53,7 @@ in {
   services.puregym-config.enable = true;
   services.puregym-config.domain = userConfig.domain;
   services.puregym-config.subdomain = "puregym";
+  services.apps-config.enable = true;
   services.apps-config.subdomain = "apps";
   services.apps-config.domain = userConfig.domain;
   # services.whisper-config.domain = userConfig.domain;
