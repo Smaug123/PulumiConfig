@@ -4,28 +4,29 @@
   lib,
   robocop,
   ...
-}: {
-  options = {
-    services.robocop-config = {
-      domain = lib.mkOption {
-        type = lib.types.str;
-        example = "example.com";
-        description = lib.mdDoc "Top-level domain to configure";
-      };
-      subdomain = lib.mkOption {
-        type = lib.types.str;
-        example = "robocop";
-        description = lib.mdDoc "Subdomain in which to put the Robocop server";
-      };
-      port = lib.mkOption {
-        type = lib.types.port;
-        description = lib.mdDoc "Robocop localhost port to be forwarded";
-        default = 8259;
-      };
+}: let
+  cfg = config.services.robocop-config;
+in {
+  options.services.robocop-config = {
+    enable = lib.mkEnableOption "Robocop server";
+    domain = lib.mkOption {
+      type = lib.types.str;
+      example = "example.com";
+      description = lib.mdDoc "Top-level domain to configure";
+    };
+    subdomain = lib.mkOption {
+      type = lib.types.str;
+      example = "robocop";
+      description = lib.mdDoc "Subdomain in which to put the Robocop server";
+    };
+    port = lib.mkOption {
+      type = lib.types.port;
+      description = lib.mdDoc "Robocop localhost port to be forwarded";
+      default = 8259;
     };
   };
 
-  config = {
+  config = lib.mkIf cfg.enable {
     users.users."robocop".group = "robocop";
     users.groups.robocop = {};
     users.users."robocop".isSystemUser = true;
@@ -39,7 +40,7 @@
         User = "robocop";
         Group = "robocop";
         ExecStart = "${robocop}/bin/robocop-server";
-        Environment = "PORT=${toString config.services.robocop-config.port}";
+        Environment = "PORT=${toString cfg.port}";
         NoNewPrivileges = true;
         ProtectSystem = "strict";
         ProtectHome = true;
@@ -52,11 +53,11 @@
       };
     };
 
-    services.nginx.virtualHosts."${config.services.robocop-config.subdomain}.${config.services.robocop-config.domain}" = {
+    services.nginx.virtualHosts."${cfg.subdomain}.${cfg.domain}" = {
       forceSSL = true;
       enableACME = true;
       locations."/" = {
-        proxyPass = "http://localhost:${toString config.services.robocop-config.port}/";
+        proxyPass = "http://localhost:${toString cfg.port}/";
         extraConfig = ''
           proxy_set_header Host $host;
           proxy_set_header X-Real-IP $remote_addr;
