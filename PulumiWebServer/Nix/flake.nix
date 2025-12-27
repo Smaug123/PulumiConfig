@@ -21,6 +21,10 @@
       url = "github:Smaug123/whisper.cpp/nix-small";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    robocop = {
+      url = "github:Smaug123/robocop";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
@@ -31,6 +35,7 @@
     website,
     puregym-client,
     whisper-packages,
+    robocop,
   } @ inputs: let
     system = "x86_64-linux";
   in {
@@ -41,6 +46,7 @@
         website = website.packages.${system}.default;
         puregym-client = puregym-client.packages.${system}.default;
         whisper-packages = whisper-packages.packages.${system};
+        robocop = robocop.packages.${system}.default;
       };
       modules = [
         (import ./configuration.nix (inputs // {inherit inputs;}))

@@ -18,6 +18,7 @@ in {
     ./prometheus/prometheus.nix
     ./grafana/grafana.nix
     ./puregym/puregym.nix
+    ./robocop/robocop.nix
     # generated at runtime by nixos-infect and copied here
     ./hardware-configuration.nix
     ./networking.nix
@@ -51,6 +52,8 @@ in {
   # services.whisper-config.subdomain = "whisper";
   services.syncthing-config.subdomain = "syncthing";
   services.syncthing-config.domain = userConfig.domain;
+  services.robocop-config.subdomain = "robocop";
+  services.robocop-config.domain = userConfig.domain;
 
   services.journald.extraConfig = "SystemMaxUse=100M";
 

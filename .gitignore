@@ -354,7 +354,7 @@ MigrationBackup/
 
 .idea/
 
-/result
+result
 .DS_Store
 
 /.profile
