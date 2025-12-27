@@ -354,11 +354,10 @@ MigrationBackup/
 
 .idea/
 
-/result
+result
 .DS_Store
 
 /.profile
 /.profile-*-link
 
 .direnv/
-result
