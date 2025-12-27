@@ -4,32 +4,38 @@
   lib,
   puregym-client,
   ...
-}: {
-  options = {
-    services.puregym-config = {
-      domain = lib.mkOption {
-        type = lib.types.str;
-        example = "example.com";
-        description = lib.mdDoc "Top-level domain to configure";
-      };
-      subdomain = lib.mkOption {
-        type = lib.types.str;
-        example = "puregym";
-        description = lib.mdDoc "Subdomain in which to put the PureGym server";
-      };
-      port = lib.mkOption {
-        type = lib.types.port;
-        description = lib.mdDoc "PureGym localhost port to be forwarded";
-        default = 1735;
-      };
+}: let
+  cfg = config.services.puregym-config;
+in {
+  options.services.puregym-config = {
+    enable = lib.mkEnableOption "PureGym attendance tracking";
+    domain = lib.mkOption {
+      type = lib.types.str;
+      example = "example.com";
+      description = lib.mdDoc "Top-level domain to configure";
+    };
+    subdomain = lib.mkOption {
+      type = lib.types.str;
+      example = "puregym";
+      description = lib.mdDoc "Subdomain in which to put the PureGym server";
+    };
+    port = lib.mkOption {
+      type = lib.types.port;
+      description = lib.mdDoc "PureGym localhost port to be forwarded";
+      default = 1735;
     };
   };
 
-  config = {
+  config = lib.mkIf cfg.enable {
     users.users."puregym".extraGroups = [config.users.groups.keys.name];
     users.users."puregym".group = "puregym";
     users.groups.puregym = {};
     users.users."puregym".isSystemUser = true;
+
+    sops.secrets = {
+      "puregym_email" = {owner = "puregym";};
+      "puregym_pin" = {owner = "puregym";};
+    };
 
     systemd.services.puregym-refresh-auth = {
       description = "puregym-refresh-auth";
@@ -57,7 +63,8 @@
     systemd.services.puregym-server = {
       description = "puregym-server";
       wantedBy = ["multi-user.target"];
-      wants = ["puregym-refresh-auth.target"];
+      wants = ["puregym-refresh-auth.service"];
+      after = ["puregym-refresh-auth.service"];
       serviceConfig = {
         Restart = "always";
         Type = "exec";
@@ -67,16 +74,37 @@
       };
       environment = {
         PUREGYM_CLIENT = "${puregym-client}/bin/PureGym.App";
-        PUREGYM_PORT = toString config.services.puregym-config.port;
+        PUREGYM_PORT = toString cfg.port;
       };
     };
 
-    services.nginx.virtualHosts."${config.services.puregym-config.subdomain}.${config.services.puregym-config.domain}" = {
+    services.nginx.virtualHosts."${cfg.subdomain}.${cfg.domain}" = {
       forceSSL = true;
       enableACME = true;
       locations."/" = {
-        proxyPass = "http://localhost:${toString config.services.puregym-config.port}/";
+        proxyPass = "http://localhost:${toString cfg.port}/";
       };
+    };
+
+    services.prometheus.scrapeConfigs = [
+      {
+        job_name = "gym-fullness";
+        static_configs = [
+          {
+            targets = ["localhost:${toString cfg.port}"];
+          }
+        ];
+        params = {gym_id = ["19"];};
+        metrics_path = "/fullness-prometheus";
+        scrape_interval = "5m";
+      }
+    ];
+
+    environment.etc."grafana-dashboards/puregym.json" = {
+      source = ../grafana/puregym.json;
+      group = "grafana";
+      user = "grafana";
+      mode = "0440";
     };
   };
 }

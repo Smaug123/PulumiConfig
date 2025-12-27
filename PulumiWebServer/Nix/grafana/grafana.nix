@@ -41,13 +41,6 @@
       mode = "0440";
     };
 
-    environment.etc."grafana-dashboards/puregym.json" = {
-      source = ./puregym.json;
-      group = "grafana";
-      user = "grafana";
-      mode = "0440";
-    };
-
     services.grafana = {
       enable = true;
       settings = {

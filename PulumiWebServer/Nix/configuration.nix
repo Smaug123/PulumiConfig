@@ -44,6 +44,7 @@ in {
   services.woodpecker-config.admin-users = [userConfig.remoteUsername];
   services.grafana-config.domain = userConfig.domain;
   services.prometheus-config.domain-exporter-domains = [userConfig.domain];
+  services.puregym-config.enable = true;
   services.puregym-config.domain = userConfig.domain;
   services.puregym-config.subdomain = "puregym";
   services.apps-config.subdomain = "apps";
