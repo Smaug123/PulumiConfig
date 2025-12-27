@@ -41,6 +41,7 @@ in {
   services.miniflux-config.enable = true;
   services.miniflux-config.subdomain = "rss";
   services.miniflux-config.domain = userConfig.domain;
+  services.woodpecker-config.enable = true;
   services.woodpecker-config.domain = userConfig.domain;
   # A small pun here: we assume that the Gitea/Woodpecker username
   # is the same as the remote username.
