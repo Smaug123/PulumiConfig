@@ -54,6 +54,7 @@ in {
   services.apps-config.domain = userConfig.domain;
   # services.whisper-config.domain = userConfig.domain;
   # services.whisper-config.subdomain = "whisper";
+  services.syncthing-config.enable = true;
   services.syncthing-config.subdomain = "syncthing";
   services.syncthing-config.domain = userConfig.domain;
   services.robocop-config.subdomain = "robocop";
