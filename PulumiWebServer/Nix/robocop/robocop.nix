@@ -3,6 +3,7 @@
   pkgs,
   lib,
   robocop,
+  robocop-dashboard,
   ...
 }: let
   cfg = config.services.robocop-config;
@@ -56,6 +57,12 @@ in {
     services.nginx.virtualHosts."${cfg.subdomain}.${cfg.domain}" = {
       forceSSL = true;
       enableACME = true;
+      locations."/ui/" = {
+        alias = "${robocop-dashboard}/";
+      };
+      locations."/ui" = {
+        return = "301 /ui/";
+      };
       locations."/" = {
         proxyPass = "http://localhost:${toString cfg.port}/";
         extraConfig = ''

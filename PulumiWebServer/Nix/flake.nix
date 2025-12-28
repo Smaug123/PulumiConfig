@@ -25,6 +25,10 @@
       url = "github:Smaug123/robocop";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    robocop-dashboard = {
+      url = "github:Smaug123/robocop-dashboard";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
@@ -36,6 +40,7 @@
     puregym-client,
     whisper-packages,
     robocop,
+    robocop-dashboard,
   } @ inputs: let
     system = "x86_64-linux";
   in {
@@ -47,6 +52,7 @@
         puregym-client = puregym-client.packages.${system}.default;
         whisper-packages = whisper-packages.packages.${system};
         robocop = robocop.packages.${system}.default;
+        robocop-dashboard = robocop-dashboard.packages.${system}.default;
       };
       modules = [
         (import ./configuration.nix (inputs // {inherit inputs;}))
