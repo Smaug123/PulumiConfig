@@ -34,16 +34,39 @@ in {
   };
 
   config = lib.mkIf cfg.enable {
-    # Secrets are decrypted on the host and bind-mounted into the container
+    # Create radicale user/group on the host with explicit UIDs matching the container.
+    # 995 is a historical detail: it's the user that was auto-allocated before we moved to containers.
+    users.users.radicale = {
+      uid = 995;
+      isSystemUser = true;
+      group = "radicale";
+      home = filesystem_folder;
+    };
+    users.groups.radicale.gid = 995;
+
+    # Secrets are decrypted on the host and bind-mounted into the container.
+    # They must be readable by the radicale user.
     sops.secrets = {
-      "radicale_user" = {};
-      "radicale_htcrypt_password" = {};
-      "radicale_password" = {};
-      "radicale_git_email" = {};
+      "radicale_user" = {
+        owner = "radicale";
+        group = "radicale";
+      };
+      "radicale_htcrypt_password" = {
+        owner = "radicale";
+        group = "radicale";
+      };
+      "radicale_git_email" = {
+        owner = "radicale";
+        group = "radicale";
+      };
     };
 
-    # Ensure the data directory exists on the host
-    systemd.tmpfiles.rules = ["d ${filesystem_folder} 0750 root root -"];
+    # Ensure the data directory exists and is owned by radicale
+    # d = create if missing, Z = recursively fix ownership on existing
+    systemd.tmpfiles.rules = [
+      "d ${filesystem_folder} 0750 radicale radicale -"
+      "Z ${filesystem_folder} 0750 radicale radicale -"
+    ];
 
     containers.radicale = {
       autoStart = true;
@@ -82,13 +105,14 @@ in {
       }: {
         system.stateVersion = "23.05";
 
-        # The radicale user needs to exist in the container
+        # The radicale user needs to exist in the container with matching UID/GID
         users.users.radicale = {
+          uid = 995;
           isSystemUser = true;
           group = "radicale";
           home = filesystem_folder;
         };
-        users.groups.radicale = {};
+        users.groups.radicale.gid = 995;
 
         services.radicale = {
           enable = true;
