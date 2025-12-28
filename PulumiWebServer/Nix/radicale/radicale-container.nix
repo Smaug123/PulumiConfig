@@ -62,10 +62,10 @@ in {
     };
 
     # Ensure the data directory exists and is owned by radicale
-    # d = create if missing, Z = recursively fix ownership on existing
+    # d = create if missing, Z = recursively fix ownership (- for mode = don't change)
     systemd.tmpfiles.rules = [
       "d ${filesystem_folder} 0750 radicale radicale -"
-      "Z ${filesystem_folder} 0750 radicale radicale -"
+      "Z ${filesystem_folder} - radicale radicale -"
     ];
 
     containers.radicale = {
@@ -89,11 +89,6 @@ in {
         };
         "/run/secrets/radicale_git_email" = {
           hostPath = "/run/secrets/radicale_git_email";
-          isReadOnly = true;
-        };
-        # Mount git and the hook script from the host's Nix store
-        "/nix/store" = {
-          hostPath = "/nix/store";
           isReadOnly = true;
         };
       };
