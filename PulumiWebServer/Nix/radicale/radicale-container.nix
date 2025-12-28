@@ -75,7 +75,11 @@ in {
         };
       };
 
-      config = {config, pkgs, ...}: {
+      config = {
+        config,
+        pkgs,
+        ...
+      }: {
         system.stateVersion = "23.05";
 
         # The radicale user needs to exist in the container
