@@ -155,5 +155,5 @@ class MyHandler(BaseHTTPRequestHandler):
 if __name__ == '__main__':
     puregym = os.environ["PUREGYM_CLIENT"]
     port = int(os.environ["PUREGYM_PORT"])
-    server = HTTPServer(('localhost', port), MyHandler)
+    server = HTTPServer(('0.0.0.0', port), MyHandler)
     server.serve_forever()
