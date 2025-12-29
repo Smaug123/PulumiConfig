@@ -35,14 +35,14 @@ in {
 
   config = lib.mkIf cfg.enable {
     # Create radicale user/group on the host with explicit UIDs matching the container.
-    # 995 is a historical detail: it's the user that was auto-allocated before we moved to containers.
+    # These are historical details: the UID/GID that were auto-allocated before we moved to containers.
     users.users.radicale = {
       uid = 995;
       isSystemUser = true;
       group = "radicale";
       home = filesystem_folder;
     };
-    users.groups.radicale.gid = 995;
+    users.groups.radicale.gid = 993;
 
     # Secrets are decrypted on the host and bind-mounted into the container.
     # They must be readable by the radicale user.
@@ -107,7 +107,7 @@ in {
           group = "radicale";
           home = filesystem_folder;
         };
-        users.groups.radicale.gid = 995;
+        users.groups.radicale.gid = 993;
 
         services.radicale = {
           enable = true;
