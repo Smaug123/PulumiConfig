@@ -2,13 +2,14 @@
   pkgs,
   lib,
   config,
+  primaryInterface,
   ...
 }: let
   cfg = config.services.syncthing-container;
   filesystem_folder = "/preserve/syncthing";
   # Container networking
-  hostAddress = "192.168.100.1";
-  containerAddress = "192.168.100.3";
+  hostAddress = "192.168.101.1";
+  containerAddress = "192.168.101.2";
   # Syncthing ports
   syncPort = 22000;
   discoveryPort = 21027;
@@ -39,11 +40,16 @@ in {
     networking.nat = {
       enable = true;
       internalInterfaces = ["ve-syncthing"];
-      externalInterface = "eth0";
+      externalInterface = primaryInterface;
       forwardPorts = [
         {
           destination = "${containerAddress}:${toString syncPort}";
           proto = "tcp";
+          sourcePort = syncPort;
+        }
+        {
+          destination = "${containerAddress}:${toString syncPort}";
+          proto = "udp";
           sourcePort = syncPort;
         }
         {
@@ -56,7 +62,7 @@ in {
 
     # Open ports on host firewall
     networking.firewall.allowedTCPPorts = [syncPort];
-    networking.firewall.allowedUDPPorts = [discoveryPort];
+    networking.firewall.allowedUDPPorts = [syncPort discoveryPort];
 
     containers.syncthing = {
       autoStart = true;
@@ -100,7 +106,7 @@ in {
 
         # Allow inbound traffic on syncthing ports
         networking.firewall.allowedTCPPorts = [syncPort 8384];
-        networking.firewall.allowedUDPPorts = [discoveryPort];
+        networking.firewall.allowedUDPPorts = [syncPort discoveryPort];
       };
     };
   };
