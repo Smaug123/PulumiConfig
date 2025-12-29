@@ -39,6 +39,13 @@ in {
     };
     users.groups.robocop.gid = 983;
 
+    # NAT for container outbound access (required for GitHub and OpenAI API calls)
+    networking.nat = {
+      enable = true;
+      internalInterfaces = ["ve-robocop"];
+      externalInterface = "eth0";
+    };
+
     containers.robocop = {
       autoStart = true;
       privateNetwork = true;
@@ -93,7 +100,9 @@ in {
           };
         };
 
-        # Allow inbound traffic on robocop port
+        # Allow inbound traffic on robocop port.
+        # Note: robocop-server binds to 0.0.0.0 (see robocop-server/src/main.rs),
+        # so it's reachable from the host via containerAddress.
         networking.firewall.allowedTCPPorts = [cfg.port];
       };
     };
