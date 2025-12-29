@@ -4,6 +4,7 @@
   lib,
   robocop,
   robocop-dashboard,
+  primaryInterface,
   ...
 }: let
   cfg = config.services.robocop-container;
@@ -32,6 +33,7 @@ in {
 
   config = lib.mkIf cfg.enable {
     # Create robocop user/group on the host with explicit UIDs matching the container.
+    # These are historical details: the UID/GID that were auto-allocated before we moved to containers.
     users.users.robocop = {
       uid = 988;
       isSystemUser = true;
@@ -43,7 +45,7 @@ in {
     networking.nat = {
       enable = true;
       internalInterfaces = ["ve-robocop"];
-      externalInterface = "eth0";
+      externalInterface = primaryInterface;
     };
 
     containers.robocop = {
