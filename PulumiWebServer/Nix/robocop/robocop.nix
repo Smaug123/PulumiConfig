@@ -60,7 +60,7 @@ in {
       locations."/ui/" = {
         alias = "${robocop-dashboard}/";
       };
-      locations."/ui" = {
+      locations."= /ui" = {
         return = "301 /ui/";
       };
       locations."/" = {
