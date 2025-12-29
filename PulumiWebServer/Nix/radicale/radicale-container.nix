@@ -140,12 +140,6 @@ in {
       };
     };
 
-    # The container service should wait for secrets to be available
-    systemd.services."container@radicale" = {
-      after = ["sops-nix.service"];
-      requires = ["sops-nix.service"];
-    };
-
     # nginx on the host proxies to the container
     services.nginx.virtualHosts."${cfg.subdomain}.${cfg.domain}" = {
       forceSSL = true;
