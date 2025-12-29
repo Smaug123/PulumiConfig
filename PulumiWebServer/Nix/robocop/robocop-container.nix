@@ -4,6 +4,7 @@
   lib,
   robocop,
   robocop-dashboard,
+  primaryInterface,
   ...
 }: let
   cfg = config.services.robocop-container;
@@ -32,12 +33,20 @@ in {
 
   config = lib.mkIf cfg.enable {
     # Create robocop user/group on the host with explicit UIDs matching the container.
+    # These are historical details: the UID/GID that were auto-allocated before we moved to containers.
     users.users.robocop = {
       uid = 988;
       isSystemUser = true;
       group = "robocop";
     };
     users.groups.robocop.gid = 983;
+
+    # NAT for container outbound access (required for GitHub and OpenAI API calls)
+    networking.nat = {
+      enable = true;
+      internalInterfaces = ["ve-robocop"];
+      externalInterface = primaryInterface;
+    };
 
     containers.robocop = {
       autoStart = true;
@@ -51,8 +60,9 @@ in {
           isReadOnly = true;
         };
         # Bind-mount the robocop package from the host's nix store
-        "${robocop}" = {
+        robocop-package = {
           hostPath = "${robocop}";
+          mountPoint = "${robocop}";
           isReadOnly = true;
         };
       };
@@ -93,7 +103,9 @@ in {
           };
         };
 
-        # Allow inbound traffic on robocop port
+        # Allow inbound traffic on robocop port.
+        # Note: robocop-server binds to 0.0.0.0 (see robocop-server/src/main.rs),
+        # so it's reachable from the host via containerAddress.
         networking.firewall.allowedTCPPorts = [cfg.port];
       };
     };

@@ -1,6 +1,10 @@
-{lib, ...}: {
+{lib, ...}: let
+  primaryInterface = "eth0";
+in {
   # This file was populated at runtime with the networking
   # details gathered from the active system.
+  _module.args.primaryInterface = primaryInterface;
+
   networking = {
     nameservers = [];
     defaultGateway = "";
@@ -8,7 +12,7 @@
     dhcpcd.enable = false;
     usePredictableInterfaceNames = lib.mkForce false;
     interfaces = {
-      eth0 = {
+      ${primaryInterface} = {
         ipv4.addresses = [];
         ipv6.addresses = [];
         ipv4.routes = [];
