@@ -37,4 +37,4 @@ sops updatekeys "$NIX_FLAKE/secrets/staging.json" || exit 3
 
 cd "$NIX_FLAKE" || exit 4
 
-nixos-rebuild switch --keep-going --show-trace --fast --flake .#default --target-host "root@$DOMAIN" --build-host "root@$DOMAIN" || exit
+nixos-rebuild switch --keep-going --show-trace --no-reexec --flake .#default --target-host "root@$DOMAIN" --build-host "root@$DOMAIN" || exit
