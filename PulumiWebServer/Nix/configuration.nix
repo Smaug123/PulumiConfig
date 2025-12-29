@@ -15,8 +15,8 @@ in {
     ./userconfig.nix
     ./nginx/nginx.nix
     ./woodpecker/woodpecker.nix
-    ./prometheus/prometheus.nix
-    ./grafana/grafana.nix
+    ./prometheus/prometheus-container.nix
+    ./grafana/grafana-container.nix
     ./puregym/puregym-container.nix
     ./robocop/robocop-container.nix
     # generated at runtime by nixos-infect and copied here
@@ -46,10 +46,10 @@ in {
   # A small pun here: we assume that the Gitea/Woodpecker username
   # is the same as the remote username.
   services.woodpecker-config.admin-users = [userConfig.remoteUsername];
-  services.grafana-config.enable = true;
-  services.grafana-config.domain = userConfig.domain;
-  services.prometheus-config.enable = true;
-  services.prometheus-config.domain-exporter-domains = [userConfig.domain];
+  services.grafana-container.enable = true;
+  services.grafana-container.domain = userConfig.domain;
+  services.prometheus-container.enable = true;
+  services.prometheus-container.domain-exporter-domains = [userConfig.domain];
   services.puregym-container.enable = true;
   services.puregym-container.domain = userConfig.domain;
   services.puregym-container.subdomain = "puregym";
