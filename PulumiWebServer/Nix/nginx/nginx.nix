@@ -44,9 +44,6 @@
     networking.firewall.allowedTCPPorts = [
       80 # required for the ACME challenge
       443
-      # syncthing
-      21027
-      22000
     ];
 
     users.users."nginx".extraGroups = [config.users.groups.keys.name];

@@ -9,7 +9,7 @@ in {
     ./sops.nix
     ./apps/apps.nix
     ./radicale/radicale-container.nix
-    ./syncthing/syncthing-config.nix
+    ./syncthing/syncthing-container.nix
     ./gitea/gitea-config.nix
     ./miniflux/miniflux.nix
     ./userconfig.nix
@@ -58,9 +58,7 @@ in {
   services.apps-config.domain = userConfig.domain;
   # services.whisper-config.domain = userConfig.domain;
   # services.whisper-config.subdomain = "whisper";
-  services.syncthing-config.enable = true;
-  services.syncthing-config.subdomain = "syncthing";
-  services.syncthing-config.domain = userConfig.domain;
+  services.syncthing-container.enable = true;
   services.robocop-config.enable = true;
   services.robocop-config.subdomain = "robocop";
   services.robocop-config.domain = userConfig.domain;
