@@ -7,7 +7,7 @@ fi
 
 if [ ! -d ".git" ]; then
     "$GIT" init || exit 3
-    "$GIT" config --local core.includesFile "$GITIGNORE" || exit 4
+    "$GIT" config --local core.excludesFile "$GITIGNORE" || exit 4
     GIT_AUTHOR_NAME=$(cat /run/secrets/radicale_user)
     "$GIT" config --local user.name "$GIT_AUTHOR_NAME" || exit 5
     GIT_AUTHOR_EMAIL=$(cat /run/secrets/radicale_git_email)
