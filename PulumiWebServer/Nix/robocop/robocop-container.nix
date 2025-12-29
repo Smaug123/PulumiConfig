@@ -60,8 +60,9 @@ in {
           isReadOnly = true;
         };
         # Bind-mount the robocop package from the host's nix store
-        "${robocop}" = {
+        robocop-package = {
           hostPath = "${robocop}";
+          mountPoint = "${robocop}";
           isReadOnly = true;
         };
       };
