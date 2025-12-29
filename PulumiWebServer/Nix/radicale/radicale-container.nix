@@ -68,6 +68,14 @@ in {
       "Z ${filesystem_folder} - radicale radicale -"
     ];
 
+    # The container service must wait for secrets to be available,
+    # otherwise bind-mounts of /run/secrets/* will fail.
+    # sops-install-secrets is a oneshot that decrypts secrets during activation.
+    systemd.services."container@radicale" = {
+      after = ["sops-install-secrets.service"];
+      requires = ["sops-install-secrets.service"];
+    };
+
     containers.radicale = {
       autoStart = true;
       privateNetwork = true;
