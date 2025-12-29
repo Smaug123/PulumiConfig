@@ -23,7 +23,7 @@
       };
       staging = lib.mkOption {
         type = lib.types.bool;
-        default = "true";
+        default = true;
         description = lib.mdDoc "Whether to use the staging Let's Encrypt instance";
       };
     };
