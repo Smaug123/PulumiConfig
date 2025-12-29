@@ -8,7 +8,7 @@ in {
   imports = [
     ./sops.nix
     ./apps/apps.nix
-    ./radicale/radicale-config.nix
+    ./radicale/radicale-container.nix
     ./syncthing/syncthing-config.nix
     ./gitea/gitea-config.nix
     ./miniflux/miniflux.nix
@@ -25,10 +25,10 @@ in {
     # ./whisper/whisper.nix
   ];
 
-  services.radicale-config.enable = true;
-  services.radicale-config.domain = userConfig.domain;
-  services.radicale-config.subdomain = "calendar";
-  services.radicale-config.enableGit = true;
+  services.radicale-container.enable = true;
+  services.radicale-container.domain = userConfig.domain;
+  services.radicale-container.subdomain = "calendar";
+  services.radicale-container.enableGit = true;
   services.userconfig.user = userConfig.remoteUsername;
   services.userconfig.sshKeys = sshKeys;
   services.nginx-config.domain = userConfig.domain;
