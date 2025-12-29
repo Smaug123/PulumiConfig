@@ -140,7 +140,6 @@ in {
       };
     };
 
-
     # nginx on the host proxies to the container
     services.nginx.virtualHosts."${cfg.subdomain}.${cfg.domain}" = {
       forceSSL = true;
