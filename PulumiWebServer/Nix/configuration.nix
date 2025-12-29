@@ -11,7 +11,7 @@ in {
     ./radicale/radicale-container.nix
     ./syncthing/syncthing-container.nix
     ./gitea/gitea-config.nix
-    ./miniflux/miniflux.nix
+    ./miniflux/miniflux-container.nix
     ./userconfig.nix
     ./nginx/nginx.nix
     ./woodpecker/woodpecker.nix
@@ -38,9 +38,9 @@ in {
   services.gitea-config.enable = true;
   services.gitea-config.subdomain = "gitea";
   services.gitea-config.domain = userConfig.domain;
-  services.miniflux-config.enable = true;
-  services.miniflux-config.subdomain = "rss";
-  services.miniflux-config.domain = userConfig.domain;
+  services.miniflux-container.enable = true;
+  services.miniflux-container.subdomain = "rss";
+  services.miniflux-container.domain = userConfig.domain;
   services.woodpecker-config.enable = true;
   services.woodpecker-config.domain = userConfig.domain;
   # A small pun here: we assume that the Gitea/Woodpecker username
