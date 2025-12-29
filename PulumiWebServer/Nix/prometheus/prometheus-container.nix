@@ -89,7 +89,8 @@ in {
       localAddress = containerAddress;
 
       bindMounts = {
-        "${dataDir}" = {
+        # Prometheus stateDir is relative to /var/lib/, so we mount to the actual path it uses
+        "/var/lib/prometheus2" = {
           hostPath = dataDir;
           isReadOnly = false;
         };

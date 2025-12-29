@@ -3,6 +3,7 @@
   pkgs,
   lib,
   puregym-client,
+  primaryInterface,
   ...
 }: let
   cfg = config.services.puregym-container;
@@ -31,12 +32,20 @@ in {
 
   config = lib.mkIf cfg.enable {
     # Create puregym user/group on the host with explicit UIDs matching the container.
+    # These are historical details: the UID/GID that were auto-allocated before we moved to containers.
     users.users.puregym = {
       uid = 990;
       isSystemUser = true;
       group = "puregym";
     };
     users.groups.puregym.gid = 986;
+
+    # NAT for container outbound access (required for PureGym API calls)
+    networking.nat = {
+      enable = true;
+      internalInterfaces = ["ve-puregym"];
+      externalInterface = primaryInterface;
+    };
 
     # Secrets are decrypted on the host and bind-mounted into the container.
     sops.secrets = {
@@ -66,8 +75,9 @@ in {
           isReadOnly = true;
         };
         # Bind-mount the puregym-client package from the host's nix store
-        "${puregym-client}" = {
+        puregym-client = {
           hostPath = "${puregym-client}";
+          mountPoint = "${puregym-client}";
           isReadOnly = true;
         };
       };
