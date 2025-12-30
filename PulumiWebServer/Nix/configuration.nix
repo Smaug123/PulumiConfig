@@ -17,7 +17,7 @@ in {
     ./woodpecker/woodpecker.nix
     ./prometheus/prometheus.nix
     ./grafana/grafana.nix
-    ./puregym/puregym.nix
+    ./puregym/puregym-container.nix
     ./robocop/robocop-container.nix
     # generated at runtime by nixos-infect and copied here
     ./hardware-configuration.nix
@@ -50,9 +50,9 @@ in {
   services.grafana-config.domain = userConfig.domain;
   services.prometheus-config.enable = true;
   services.prometheus-config.domain-exporter-domains = [userConfig.domain];
-  services.puregym-config.enable = true;
-  services.puregym-config.domain = userConfig.domain;
-  services.puregym-config.subdomain = "puregym";
+  services.puregym-container.enable = true;
+  services.puregym-container.domain = userConfig.domain;
+  services.puregym-container.subdomain = "puregym";
   services.apps-config.enable = true;
   services.apps-config.subdomain = "apps";
   services.apps-config.domain = userConfig.domain;

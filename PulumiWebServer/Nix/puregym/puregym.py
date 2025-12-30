@@ -95,7 +95,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 output = completed_process.stderr + '\n' + completed_process.stdout
                 output = output.encode('utf-8')
                 self._cache_result_by_name[desired_gym_name] = output
-                self._last_accessed_by_id[desired_gym_name] = datetime.now()
+                self._last_accessed_by_name[desired_gym_name] = datetime.now()
             else:
                 output = self._cache_result_by_name[desired_gym_name]
         else:
@@ -155,5 +155,5 @@ class MyHandler(BaseHTTPRequestHandler):
 if __name__ == '__main__':
     puregym = os.environ["PUREGYM_CLIENT"]
     port = int(os.environ["PUREGYM_PORT"])
-    server = HTTPServer(('localhost', port), MyHandler)
+    server = HTTPServer(('0.0.0.0', port), MyHandler)
     server.serve_forever()

@@ -344,11 +344,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1757366940,
-        "narHash": "sha256-GFxGO40Tu65a1VZQ6z7RTMEHf9jr6TD4nuLplv17fKM=",
+        "lastModified": 1767092819,
+        "narHash": "sha256-A2VpPln1SB/ZbgTdU+s9JANSP4c9ZSSGzobsHSNGVFA=",
         "ref": "refs/heads/main",
-        "rev": "2ca8c5e43b7b77c1e6208e2ae996192e0c820e74",
-        "revCount": 21,
+        "rev": "63835ecfba1e4683368b7cd4ed5d55abfed982e1",
+        "revCount": 24,
         "type": "git",
         "url": "https://gitea.patrickstevens.co.uk/patrick/puregym-unofficial-dotnet"
       },
