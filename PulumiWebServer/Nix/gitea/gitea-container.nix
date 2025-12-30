@@ -33,13 +33,13 @@ in {
 
   config = lib.mkIf cfg.enable {
     # Create gitea user/group on the host with explicit UIDs matching the container.
-    # These are historical values from the original bare-metal deployment.
+    # These match what the NixOS gitea module auto-allocates in the container.
     users.users.gitea = {
-      uid = 997;
+      uid = 994;
       isSystemUser = true;
       group = "gitea";
     };
-    users.groups.gitea.gid = 995;
+    users.groups.gitea.gid = 992;
 
     # NAT for container outbound access (required for webhooks, federation, etc.)
     networking.nat = {
@@ -169,10 +169,7 @@ in {
         # Network configuration: use the host as the default gateway for outbound traffic
         networking.defaultGateway = hostAddress;
 
-        # The gitea user needs to exist in the container with matching UID/GID
-        # mkForce required because services.gitea module also defines this user
-        users.users.gitea.uid = lib.mkForce 997;
-        users.groups.gitea.gid = lib.mkForce 995;
+        # The gitea user is created by services.gitea with auto-allocated UID/GID (994:992)
 
         services.gitea = {
           enable = true;
@@ -186,6 +183,8 @@ in {
             name = "gitea";
             user = "gitea";
             passwordFile = "/run/secrets/gitea_server_password";
+            # Don't create DB locally - we use the host's PostgreSQL
+            createDatabase = false;
           };
           settings = {
             mailer = {
