@@ -1,0 +1,179 @@
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}: let
+  cfg = config.services.prometheus-container;
+  # Container networking
+  hostAddress = "192.168.100.1";
+  # Data directory for Prometheus
+  dataDir = "/preserve/prometheus";
+in {
+  options.services.prometheus-container = {
+    enable = lib.mkEnableOption "Prometheus monitoring (containerised)";
+    containerAddress = lib.mkOption {
+      type = lib.types.str;
+      description = lib.mdDoc "IP address of the Prometheus container";
+      default = "192.168.100.6";
+    };
+    port = lib.mkOption {
+      type = lib.types.port;
+      description = lib.mdDoc "Prometheus port inside container";
+      default = 9002;
+    };
+    node-exporter-port = lib.mkOption {
+      type = lib.types.port;
+      description = lib.mdDoc "Host port for node exporter";
+      default = 9003;
+    };
+    domain-exporter-domains = lib.mkOption {
+      type = lib.types.listOf lib.types.str;
+      description = lib.mdDoc "Domains to be interpolated into the domain-exporter config.";
+      example = ["example.com"];
+    };
+    extraScrapeConfigs = lib.mkOption {
+      type = lib.types.listOf lib.types.attrs;
+      description = lib.mdDoc "Additional Prometheus scrape configurations.";
+      default = [];
+      example = [
+        {
+          job_name = "my-service";
+          static_configs = [{targets = ["192.168.100.5:8080"];}];
+        }
+      ];
+    };
+  };
+
+  config = lib.mkIf cfg.enable {
+    # Create prometheus user/group on the host with explicit UIDs matching the container.
+    users.users.prometheus = {
+      uid = 255;
+      isSystemUser = true;
+      group = "prometheus";
+    };
+    users.groups.prometheus.gid = 255;
+
+    # Ensure the data directory exists and is owned by prometheus
+    systemd.tmpfiles.rules = [
+      "d ${dataDir} 0750 prometheus prometheus -"
+      "Z ${dataDir} - prometheus prometheus -"
+    ];
+
+    # === EXPORTERS RUN ON HOST ===
+    # They need access to host resources (systemd, nginx, etc.)
+
+    # Allow containers to reach exporters on the host via veth interfaces
+    networking.firewall.interfaces."ve-+" = {
+      allowedTCPPorts = [cfg.node-exporter-port 9113 9222];
+    };
+
+    # Domain exporter config file
+    environment.etc."domain-exporter/domains.yaml" = {
+      text = let
+        interp = builtins.concatStringsSep "\", \"" cfg.domain-exporter-domains;
+      in
+        builtins.replaceStrings ["%%DOMAINS%%"] [interp] (builtins.readFile ./domains.yaml);
+    };
+
+    # Node exporter on host
+    services.prometheus.exporters.node = {
+      enable = true;
+      enabledCollectors = ["systemd"];
+      port = cfg.node-exporter-port;
+      # Listen on bridge interface so container can reach it
+      listenAddress = hostAddress;
+    };
+
+    # Nginx exporter on host
+    services.prometheus.exporters.nginx = {
+      enable = true;
+      # Listen on bridge interface so container can reach it
+      listenAddress = hostAddress;
+    };
+
+    # Domain exporter on host
+    services.prometheus.exporters.domain = {
+      enable = true;
+      extraFlags = ["--config=/etc/domain-exporter/domains.yaml"];
+      # Listen on bridge interface so container can reach it
+      listenAddress = hostAddress;
+    };
+
+    # === PROMETHEUS SERVER IN CONTAINER ===
+
+    containers.prometheus = {
+      autoStart = true;
+      privateNetwork = true;
+      hostAddress = hostAddress;
+      localAddress = cfg.containerAddress;
+
+      bindMounts = {
+        # Prometheus stateDir is relative to /var/lib/, so we mount to the actual path it uses
+        "/var/lib/prometheus2" = {
+          hostPath = dataDir;
+          isReadOnly = false;
+        };
+      };
+
+      config = {
+        config,
+        pkgs,
+        ...
+      }: {
+        system.stateVersion = "23.05";
+
+        # The prometheus user needs to exist in the container with matching UID/GID
+        users.users.prometheus = {
+          uid = 255;
+          isSystemUser = true;
+          group = "prometheus";
+        };
+        users.groups.prometheus.gid = 255;
+
+        services.prometheus = {
+          enable = true;
+          port = cfg.port;
+          listenAddress = "0.0.0.0";
+          stateDir = "prometheus2";
+          retentionTime = "60d";
+
+          # Scrape exporters on the host via bridge IP
+          scrapeConfigs =
+            [
+              {
+                job_name = "node";
+                static_configs = [
+                  {
+                    targets = ["${hostAddress}:${toString cfg.node-exporter-port}"];
+                  }
+                ];
+              }
+              {
+                job_name = "nginx";
+                static_configs = [
+                  {
+                    # nginx exporter default port
+                    targets = ["${hostAddress}:9113"];
+                  }
+                ];
+              }
+              {
+                job_name = "domain";
+                static_configs = [
+                  {
+                    # domain exporter default port
+                    targets = ["${hostAddress}:9222"];
+                  }
+                ];
+              }
+            ]
+            ++ cfg.extraScrapeConfigs;
+        };
+
+        # Allow inbound traffic on prometheus port
+        networking.firewall.allowedTCPPorts = [cfg.port];
+      };
+    };
+  };
+}

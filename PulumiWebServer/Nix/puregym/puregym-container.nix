@@ -158,9 +158,16 @@ in {
       };
     };
 
-    # Prometheus scrapes the container
-    # Note: When Prometheus is containerized, this will need to use containerAddress
-    services.prometheus.scrapeConfigs = [
+    # Grafana dashboard - stays on host since Grafana reads from /etc
+    environment.etc."grafana-dashboards/puregym.json" = {
+      source = ../grafana/puregym.json;
+      group = "grafana";
+      user = "grafana";
+      mode = "0440";
+    };
+
+    # Prometheus scrape config for PureGym metrics
+    services.prometheus-container.extraScrapeConfigs = [
       {
         job_name = "gym-fullness";
         static_configs = [
@@ -173,13 +180,5 @@ in {
         scrape_interval = "5m";
       }
     ];
-
-    # Grafana dashboard - stays on host since Grafana reads from /etc
-    environment.etc."grafana-dashboards/puregym.json" = {
-      source = ../grafana/puregym.json;
-      group = "grafana";
-      user = "grafana";
-      mode = "0440";
-    };
   };
 }

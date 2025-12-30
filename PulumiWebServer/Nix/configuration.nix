@@ -1,9 +1,14 @@
-{nixpkgs, ...}: let
+{
+  nixpkgs,
+  config,
+  ...
+}: let
   lib = nixpkgs.lib;
   # TODO: how can I get this passed in?
   pkgs = nixpkgs.legacyPackages."x86_64-linux";
   userConfig = lib.importJSON ./config.json;
   sshKeys = lib.importJSON ./ssh-keys.json;
+  prometheusCfg = config.services.prometheus-container;
 in {
   imports = [
     ./sops.nix
@@ -15,8 +20,8 @@ in {
     ./userconfig.nix
     ./nginx/nginx.nix
     ./woodpecker/woodpecker.nix
-    ./prometheus/prometheus.nix
-    ./grafana/grafana.nix
+    ./prometheus/prometheus-container.nix
+    ./grafana/grafana-container.nix
     ./puregym/puregym-container.nix
     ./robocop/robocop-container.nix
     # generated at runtime by nixos-infect and copied here
@@ -46,10 +51,11 @@ in {
   # A small pun here: we assume that the Gitea/Woodpecker username
   # is the same as the remote username.
   services.woodpecker-config.admin-users = [userConfig.remoteUsername];
-  services.grafana-config.enable = true;
-  services.grafana-config.domain = userConfig.domain;
-  services.prometheus-config.enable = true;
-  services.prometheus-config.domain-exporter-domains = [userConfig.domain];
+  services.grafana-container.enable = true;
+  services.grafana-container.domain = userConfig.domain;
+  services.grafana-container.prometheusUrl = "http://${prometheusCfg.containerAddress}:${toString prometheusCfg.port}";
+  services.prometheus-container.enable = true;
+  services.prometheus-container.domain-exporter-domains = [userConfig.domain];
   services.puregym-container.enable = true;
   services.puregym-container.domain = userConfig.domain;
   services.puregym-container.subdomain = "puregym";
