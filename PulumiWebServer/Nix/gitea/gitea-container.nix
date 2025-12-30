@@ -33,12 +33,13 @@ in {
 
   config = lib.mkIf cfg.enable {
     # Create gitea user/group on the host with explicit UIDs matching the container.
+    # These are historical values from the original bare-metal deployment.
     users.users.gitea = {
-      uid = 994;
+      uid = 997;
       isSystemUser = true;
       group = "gitea";
     };
-    users.groups.gitea.gid = 992;
+    users.groups.gitea.gid = 995;
 
     # NAT for container outbound access (required for webhooks, federation, etc.)
     networking.nat = {
@@ -169,12 +170,9 @@ in {
         networking.defaultGateway = hostAddress;
 
         # The gitea user needs to exist in the container with matching UID/GID
-        users.users.gitea = {
-          uid = 994;
-          isSystemUser = true;
-          group = "gitea";
-        };
-        users.groups.gitea.gid = 992;
+        # mkForce required because services.gitea module also defines this user
+        users.users.gitea.uid = lib.mkForce 997;
+        users.groups.gitea.gid = lib.mkForce 995;
 
         services.gitea = {
           enable = true;
