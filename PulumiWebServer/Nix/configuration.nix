@@ -15,7 +15,7 @@ in {
     ./apps/apps.nix
     ./radicale/radicale-container.nix
     ./syncthing/syncthing-container.nix
-    ./gitea/gitea-config.nix
+    ./gitea/gitea-container.nix
     ./miniflux/miniflux-container.nix
     ./userconfig.nix
     ./nginx/nginx.nix
@@ -40,9 +40,9 @@ in {
   services.nginx-config.email = userConfig.acmeEmail;
   services.nginx-config.webrootSubdomain = "www";
   services.nginx-config.staging = true;
-  services.gitea-config.enable = true;
-  services.gitea-config.subdomain = "gitea";
-  services.gitea-config.domain = userConfig.domain;
+  services.gitea-container.enable = true;
+  services.gitea-container.subdomain = "gitea";
+  services.gitea-container.domain = userConfig.domain;
   services.miniflux-container.enable = true;
   services.miniflux-container.subdomain = "rss";
   services.miniflux-container.domain = userConfig.domain;
