@@ -2,6 +2,7 @@
   config,
   pkgs,
   lib,
+  primaryInterface,
   ...
 }: let
   cfg = config.services.miniflux-container;
@@ -36,6 +37,13 @@ in {
       group = "miniflux";
     };
     users.groups.miniflux.gid = 991;
+
+    # NAT for container outbound access (required for fetching RSS feeds)
+    networking.nat = {
+      enable = true;
+      internalInterfaces = ["ve-miniflux"];
+      externalInterface = primaryInterface;
+    };
 
     # Secrets are decrypted on the host and bind-mounted into the container.
     sops.secrets = {
@@ -81,8 +89,14 @@ in {
         RemainAfterExit = true;
       };
       script = ''
-        ${pkgs.postgresql}/bin/psql -c "ALTER USER miniflux WITH PASSWORD '$(cat /run/secrets/miniflux_db_password)';"
+        ${pkgs.sudo}/bin/sudo -u postgres ${pkgs.postgresql}/bin/psql -c "ALTER USER miniflux WITH PASSWORD '$(cat /run/secrets/miniflux_db_password)';"
       '';
+    };
+
+    # Ensure the container waits for the database password to be set
+    systemd.services."container@miniflux" = {
+      after = ["miniflux-db-password.service"];
+      wants = ["miniflux-db-password.service"];
     };
 
     containers.miniflux = {
@@ -109,6 +123,9 @@ in {
         ...
       }: {
         system.stateVersion = "23.05";
+
+        # Network configuration: use the host as the default gateway for outbound traffic
+        networking.defaultGateway = hostAddress;
 
         # The miniflux user needs to exist in the container with matching UID/GID
         users.users.miniflux = {
