@@ -74,6 +74,9 @@ in {
       }: {
         system.stateVersion = "23.05";
 
+        # Network configuration: use the host as the default gateway for outbound traffic
+        networking.defaultGateway = hostAddress;
+
         # The robocop user needs to exist in the container with matching UID/GID
         users.users.robocop = {
           uid = 988;
