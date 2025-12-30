@@ -146,7 +146,7 @@ in {
         };
         # robots.txt to disallow crawling
         "/var/lib/gitea-robots/robots.txt" = {
-          hostPath = toString ./robots.txt;
+          hostPath = "${./robots.txt}";
           isReadOnly = true;
         };
       };
