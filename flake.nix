@@ -68,6 +68,7 @@
                 pkgs.xmlstarlet
                 pkgs.claude-code
                 pkgs.codex
+                pkgs.alejandra
               ]
               ++ requirements;
             shellHook = ''
