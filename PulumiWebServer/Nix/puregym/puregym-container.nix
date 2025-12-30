@@ -74,10 +74,11 @@ in {
           hostPath = "/run/secrets/puregym_pin";
           isReadOnly = true;
         };
-        # Bind-mount the puregym-client package from the host's nix store
-        puregym-client = {
-          hostPath = "${puregym-client}";
-          mountPoint = "${puregym-client}";
+        # Mount the entire nix store so the .NET runtime can access all its dependencies.
+        # Unlike Rust binaries which are statically linked, .NET apps have many runtime
+        # dependencies (ICU, CoreCLR, etc.) that live in separate store paths.
+        "/nix/store" = {
+          hostPath = "/nix/store";
           isReadOnly = true;
         };
       };
@@ -88,6 +89,9 @@ in {
         ...
       }: {
         system.stateVersion = "23.05";
+
+        # Network configuration: use the host as the default gateway for outbound traffic
+        networking.defaultGateway = hostAddress;
 
         # The puregym user needs to exist in the container with matching UID/GID
         users.users.puregym = {
