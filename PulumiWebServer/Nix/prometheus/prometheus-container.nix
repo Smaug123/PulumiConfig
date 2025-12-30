@@ -7,12 +7,16 @@
   cfg = config.services.prometheus-container;
   # Container networking
   hostAddress = "192.168.100.1";
-  containerAddress = "192.168.100.6";
   # Data directory for Prometheus
   dataDir = "/preserve/prometheus";
 in {
   options.services.prometheus-container = {
     enable = lib.mkEnableOption "Prometheus monitoring (containerised)";
+    containerAddress = lib.mkOption {
+      type = lib.types.str;
+      description = lib.mdDoc "IP address of the Prometheus container";
+      default = "192.168.100.6";
+    };
     port = lib.mkOption {
       type = lib.types.port;
       description = lib.mdDoc "Prometheus port inside container";
@@ -97,7 +101,7 @@ in {
       autoStart = true;
       privateNetwork = true;
       hostAddress = hostAddress;
-      localAddress = containerAddress;
+      localAddress = cfg.containerAddress;
 
       bindMounts = {
         # Prometheus stateDir is relative to /var/lib/, so we mount to the actual path it uses
