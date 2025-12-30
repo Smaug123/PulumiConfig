@@ -63,6 +63,11 @@ in {
     # === EXPORTERS RUN ON HOST ===
     # They need access to host resources (systemd, nginx, etc.)
 
+    # Allow containers to reach exporters on the host via veth interfaces
+    networking.firewall.interfaces."ve-+" = {
+      allowedTCPPorts = [cfg.node-exporter-port 9113 9222];
+    };
+
     # Domain exporter config file
     environment.etc."domain-exporter/domains.yaml" = {
       text = let
