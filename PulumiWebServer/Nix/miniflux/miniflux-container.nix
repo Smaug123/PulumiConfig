@@ -45,6 +45,9 @@ in {
       externalInterface = primaryInterface;
     };
 
+    # Allow container to connect to PostgreSQL on the host
+    networking.firewall.interfaces."ve-miniflux".allowedTCPPorts = [5432];
+
     # Secrets are decrypted on the host and bind-mounted into the container.
     sops.secrets = {
       "miniflux_admin_password" = {
