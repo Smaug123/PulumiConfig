@@ -7,12 +7,16 @@
   cfg = config.services.prometheus-container;
   # Container networking
   hostAddress = "192.168.100.1";
-  containerAddress = "192.168.100.6";
   # Data directory for Prometheus
   dataDir = "/preserve/prometheus";
 in {
   options.services.prometheus-container = {
     enable = lib.mkEnableOption "Prometheus monitoring (containerised)";
+    containerAddress = lib.mkOption {
+      type = lib.types.str;
+      description = lib.mdDoc "IP address of the Prometheus container";
+      default = "192.168.100.6";
+    };
     port = lib.mkOption {
       type = lib.types.port;
       description = lib.mdDoc "Prometheus port inside container";
@@ -27,6 +31,17 @@ in {
       type = lib.types.listOf lib.types.str;
       description = lib.mdDoc "Domains to be interpolated into the domain-exporter config.";
       example = ["example.com"];
+    };
+    extraScrapeConfigs = lib.mkOption {
+      type = lib.types.listOf lib.types.attrs;
+      description = lib.mdDoc "Additional Prometheus scrape configurations.";
+      default = [];
+      example = [
+        {
+          job_name = "my-service";
+          static_configs = [{targets = ["192.168.100.5:8080"];}];
+        }
+      ];
     };
   };
 
@@ -86,7 +101,7 @@ in {
       autoStart = true;
       privateNetwork = true;
       hostAddress = hostAddress;
-      localAddress = containerAddress;
+      localAddress = cfg.containerAddress;
 
       bindMounts = {
         # Prometheus stateDir is relative to /var/lib/, so we mount to the actual path it uses
@@ -119,46 +134,36 @@ in {
           retentionTime = "60d";
 
           # Scrape exporters on the host via bridge IP
-          scrapeConfigs = [
-            {
-              job_name = "node";
-              static_configs = [
-                {
-                  targets = ["${hostAddress}:${toString cfg.node-exporter-port}"];
-                }
-              ];
-            }
-            {
-              job_name = "nginx";
-              static_configs = [
-                {
-                  # nginx exporter default port
-                  targets = ["${hostAddress}:9113"];
-                }
-              ];
-            }
-            {
-              job_name = "domain";
-              static_configs = [
-                {
-                  # domain exporter default port
-                  targets = ["${hostAddress}:9222"];
-                }
-              ];
-            }
-            {
-              job_name = "gym-fullness";
-              static_configs = [
-                {
-                  # PureGym container
-                  targets = ["192.168.100.5:1735"];
-                }
-              ];
-              params = {gym_id = ["19"];};
-              metrics_path = "/fullness-prometheus";
-              scrape_interval = "5m";
-            }
-          ];
+          scrapeConfigs =
+            [
+              {
+                job_name = "node";
+                static_configs = [
+                  {
+                    targets = ["${hostAddress}:${toString cfg.node-exporter-port}"];
+                  }
+                ];
+              }
+              {
+                job_name = "nginx";
+                static_configs = [
+                  {
+                    # nginx exporter default port
+                    targets = ["${hostAddress}:9113"];
+                  }
+                ];
+              }
+              {
+                job_name = "domain";
+                static_configs = [
+                  {
+                    # domain exporter default port
+                    targets = ["${hostAddress}:9222"];
+                  }
+                ];
+              }
+            ]
+            ++ cfg.extraScrapeConfigs;
         };
 
         # Allow inbound traffic on prometheus port

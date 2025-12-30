@@ -158,9 +158,6 @@ in {
       };
     };
 
-    # Prometheus scrape config is now in prometheus-container.nix
-    # since Prometheus runs in its own container
-
     # Grafana dashboard - stays on host since Grafana reads from /etc
     environment.etc."grafana-dashboards/puregym.json" = {
       source = ../grafana/puregym.json;
@@ -168,5 +165,20 @@ in {
       user = "grafana";
       mode = "0440";
     };
+
+    # Prometheus scrape config for PureGym metrics
+    services.prometheus-container.extraScrapeConfigs = [
+      {
+        job_name = "gym-fullness";
+        static_configs = [
+          {
+            targets = ["${containerAddress}:${toString cfg.port}"];
+          }
+        ];
+        params = {gym_id = ["19"];};
+        metrics_path = "/fullness-prometheus";
+        scrape_interval = "5m";
+      }
+    ];
   };
 }

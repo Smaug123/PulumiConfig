@@ -1,9 +1,14 @@
-{nixpkgs, ...}: let
+{
+  nixpkgs,
+  config,
+  ...
+}: let
   lib = nixpkgs.lib;
   # TODO: how can I get this passed in?
   pkgs = nixpkgs.legacyPackages."x86_64-linux";
   userConfig = lib.importJSON ./config.json;
   sshKeys = lib.importJSON ./ssh-keys.json;
+  prometheusCfg = config.services.prometheus-container;
 in {
   imports = [
     ./sops.nix
@@ -48,6 +53,7 @@ in {
   services.woodpecker-config.admin-users = [userConfig.remoteUsername];
   services.grafana-container.enable = true;
   services.grafana-container.domain = userConfig.domain;
+  services.grafana-container.prometheusUrl = "http://${prometheusCfg.containerAddress}:${toString prometheusCfg.port}";
   services.prometheus-container.enable = true;
   services.prometheus-container.domain-exporter-domains = [userConfig.domain];
   services.puregym-container.enable = true;

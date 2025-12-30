@@ -8,7 +8,6 @@
   # Container networking
   hostAddress = "192.168.100.1";
   containerAddress = "192.168.100.7";
-  prometheusAddress = "192.168.100.6";
   # Data directory for Grafana
   dataDir = "/preserve/grafana";
 in {
@@ -28,6 +27,11 @@ in {
       type = lib.types.port;
       description = lib.mdDoc "Grafana port inside container";
       default = 2342;
+    };
+    prometheusUrl = lib.mkOption {
+      type = lib.types.str;
+      example = "http://192.168.100.6:9002";
+      description = lib.mdDoc "URL of the Prometheus server to use as a datasource";
     };
   };
 
@@ -136,8 +140,7 @@ in {
                   {
                     name = "prometheus ${cfg.domain}";
                     type = "prometheus";
-                    # Prometheus is in another container (default port 9002)
-                    url = "http://${prometheusAddress}:9002";
+                    url = cfg.prometheusUrl;
                     access = "proxy";
                   }
                 ];
