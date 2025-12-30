@@ -47,7 +47,7 @@
     nixosConfigurations.default = nixpkgs.lib.nixosSystem {
       inherit system;
       specialArgs = {
-        inherit system;
+        inherit system nixpkgs;
         website = website.packages.${system}.default;
         puregym-client = puregym-client.packages.${system}.default;
         whisper-packages = whisper-packages.packages.${system};
@@ -55,7 +55,7 @@
         robocop-dashboard = robocop-dashboard.packages.${system}.default;
       };
       modules = [
-        (import ./configuration.nix (inputs // {inherit inputs;}))
+        ./configuration.nix
         sops.nixosModules.sops
       ];
     };
