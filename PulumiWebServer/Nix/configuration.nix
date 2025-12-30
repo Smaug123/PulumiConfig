@@ -48,6 +48,7 @@ in {
   services.woodpecker-config.admin-users = [userConfig.remoteUsername];
   services.grafana-container.enable = true;
   services.grafana-container.domain = userConfig.domain;
+  services.grafana-container.prometheusUrl = "http://192.168.100.6:9002";
   services.prometheus-container.enable = true;
   services.prometheus-container.domain-exporter-domains = [userConfig.domain];
   services.puregym-container.enable = true;
