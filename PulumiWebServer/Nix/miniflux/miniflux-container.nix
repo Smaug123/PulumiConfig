@@ -144,16 +144,18 @@ in {
           };
         };
 
-        # Override miniflux service to inject DATABASE_URL with password from secret
-        systemd.services.miniflux.serviceConfig.ExecStartPre = lib.mkBefore [
-          "+${pkgs.writeShellScript "miniflux-db-env" ''
-            DB_PASS=$(cat /run/secrets/miniflux_db_password)
-            echo "DATABASE_URL=postgres://miniflux:$DB_PASS@${hostAddress}/miniflux?sslmode=disable" > /run/miniflux-db-env
-            chmod 400 /run/miniflux-db-env
-            chown miniflux:miniflux /run/miniflux-db-env
-          ''}"
-        ];
-        systemd.services.miniflux.serviceConfig.EnvironmentFile = lib.mkForce ["/run/miniflux-db-env"];
+        # Override miniflux service to inject DATABASE_URL with password from secret.
+        # We wrap ExecStart rather than using EnvironmentFile because systemd loads
+        # EnvironmentFile before running ExecStartPre, causing a chicken-and-egg problem.
+        systemd.services.miniflux.serviceConfig.ExecStart = let
+          wrapper = pkgs.writeShellScript "miniflux-wrapper" ''
+            export DATABASE_URL="postgres://miniflux:$(cat /run/secrets/miniflux_db_password)@${hostAddress}/miniflux?sslmode=disable"
+            exec ${pkgs.miniflux}/bin/miniflux
+          '';
+        in
+          lib.mkForce wrapper;
+        # Disable DynamicUser so we use the static miniflux user (uid 993) that owns the secrets
+        systemd.services.miniflux.serviceConfig.DynamicUser = lib.mkForce false;
 
         # Allow inbound traffic on miniflux port
         networking.firewall.allowedTCPPorts = [cfg.port];
