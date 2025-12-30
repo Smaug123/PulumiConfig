@@ -158,8 +158,21 @@ in {
       };
     };
 
-    # Prometheus scrape config is now in prometheus-container.nix
-    # since Prometheus runs in its own container
+    # Prometheus scrapes the container
+    # Note: When Prometheus is containerized, this will need to use containerAddress
+    services.prometheus.scrapeConfigs = [
+      {
+        job_name = "gym-fullness";
+        static_configs = [
+          {
+            targets = ["${containerAddress}:${toString cfg.port}"];
+          }
+        ];
+        params = {gym_id = ["19"];};
+        metrics_path = "/fullness-prometheus";
+        scrape_interval = "5m";
+      }
+    ];
 
     # Grafana dashboard - stays on host since Grafana reads from /etc
     environment.etc."grafana-dashboards/puregym.json" = {

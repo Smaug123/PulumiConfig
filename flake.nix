@@ -11,7 +11,10 @@
   }:
     flake-utils.lib.eachDefaultSystem (
       system: let
-        pkgs = import nixpkgs {inherit system;};
+        pkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        };
         projectFile = "./PulumiWebServer/PulumiWebServer.fsproj";
         testProjectFile = "./PulumiWebServer.Test/PulumiWebServer.Test.fsproj";
         pname = "PulumiWebServer";
@@ -63,6 +66,8 @@
                 pkgs.nixos-rebuild
                 pkgs.gnused
                 pkgs.xmlstarlet
+                pkgs.claude-code
+                pkgs.codex
               ]
               ++ requirements;
             shellHook = ''
