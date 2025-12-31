@@ -84,8 +84,8 @@ in {
     # Set miniflux password after PostgreSQL starts
     systemd.services.miniflux-db-password = {
       description = "Set miniflux PostgreSQL password";
-      after = ["postgresql.service"];
-      requires = ["postgresql.service"];
+      after = ["postgresql.service" "sops-nix.service"];
+      requires = ["postgresql.service" "sops-nix.service"];
       wantedBy = ["multi-user.target"];
       serviceConfig = {
         Type = "oneshot";
@@ -115,7 +115,8 @@ in {
       script = ''
         # Escape for libpq key-value format: backslashes first, then single quotes
         PW=$(cat /run/secrets/miniflux_db_password | ${pkgs.gnused}/bin/sed -e 's/\\/\\\\/g' -e "s/'/\\\\'/g")
-        echo "DATABASE_URL=host=${hostAddress} dbname=miniflux user=miniflux password='$PW' sslmode=disable" > /run/miniflux/env
+        # Quote the entire value for systemd EnvironmentFile parsing
+        echo "DATABASE_URL=\"host=${hostAddress} dbname=miniflux user=miniflux password='$PW' sslmode=disable\"" > /run/miniflux/env
         chown miniflux:miniflux /run/miniflux/env
         chmod 0400 /run/miniflux/env
       '';
