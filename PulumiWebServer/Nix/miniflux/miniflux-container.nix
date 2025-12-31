@@ -64,13 +64,13 @@ in {
     services.postgresql = {
       enable = true;
       enableTCPIP = true;
-      # Listen on bridge interface for container access
+      # Listen on localhost and bridge interface for container access
       settings = {
-        listen_addresses = lib.mkForce "0.0.0.0";
+        listen_addresses = lib.mkForce "127.0.0.1,${hostAddress}";
       };
       authentication = lib.mkAfter ''
         # Allow miniflux container to connect via TCP with password
-        host miniflux miniflux ${containerAddress}/32 md5
+        host miniflux miniflux ${containerAddress}/32 scram-sha-256
       '';
       ensureDatabases = ["miniflux"];
       ensureUsers = [
@@ -112,9 +112,11 @@ in {
         RuntimeDirectory = "miniflux";
         RuntimeDirectoryMode = "0750";
       };
-      script = ''
+      script = let
+        sq = "''";
+      in ''
         # URL-encode the password for URI format (handles all special characters)
-        PW=$(${pkgs.python3}/bin/python3 -c "import sys, urllib.parse; print(urllib.parse.quote(sys.stdin.read().rstrip('\n'), safe=''''''), end='''')" < /run/secrets/miniflux_db_password)
+        PW=$(${pkgs.python3}/bin/python3 -c "import sys, urllib.parse; print(urllib.parse.quote(sys.stdin.read().rstrip('\n'), safe=${sq}), end=${sq})" < /run/secrets/miniflux_db_password)
         # URI format avoids libpq key-value escaping; URL-encoded password is systemd-safe
         echo "DATABASE_URL=postgres://miniflux:$PW@${hostAddress}/miniflux?sslmode=disable" > /run/miniflux/env
         chown miniflux:miniflux /run/miniflux/env
