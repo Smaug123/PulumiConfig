@@ -66,7 +66,7 @@ in {
       enableTCPIP = true;
       # Listen on localhost and bridge interface for container access
       settings = {
-        listen_addresses = lib.mkForce "127.0.0.1,${hostAddress}";
+        listen_addresses = lib.mkForce "0.0.0.0";
       };
       authentication = lib.mkAfter ''
         # Allow miniflux container to connect via TCP with password
@@ -94,7 +94,7 @@ in {
       script = ''
         # Escape single quotes for SQL (double them)
         PW=$(cat /run/secrets/miniflux_db_password | ${pkgs.gnused}/bin/sed "s/'/''''/g")
-        ${pkgs.sudo}/bin/sudo -u postgres ${pkgs.postgresql}/bin/psql -c "ALTER USER miniflux WITH PASSWORD '$PW';"
+        ${pkgs.sudo}/bin/sudo -u postgres ${config.services.postgresql.package}/bin/psql -c "ALTER USER miniflux WITH PASSWORD '$PW';"
       '';
     };
 
