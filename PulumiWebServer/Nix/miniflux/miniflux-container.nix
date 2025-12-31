@@ -66,7 +66,7 @@ in {
       enableTCPIP = true;
       # Listen on bridge interface for container access
       settings = {
-        listen_addresses = lib.mkForce "localhost,${hostAddress}";
+        listen_addresses = lib.mkForce "0.0.0.0";
       };
       authentication = lib.mkAfter ''
         # Allow miniflux container to connect via TCP with password
@@ -92,14 +92,39 @@ in {
         RemainAfterExit = true;
       };
       script = ''
-        ${pkgs.sudo}/bin/sudo -u postgres ${pkgs.postgresql}/bin/psql -c "ALTER USER miniflux WITH PASSWORD '$(cat /run/secrets/miniflux_db_password)';"
+        # Escape single quotes for SQL (double them)
+        PW=$(cat /run/secrets/miniflux_db_password | ${pkgs.gnused}/bin/sed "s/'/''''/g")
+        ${pkgs.sudo}/bin/sudo -u postgres ${pkgs.postgresql}/bin/psql -c "ALTER USER miniflux WITH PASSWORD '$PW';"
       '';
     };
 
-    # Ensure the container waits for the database password to be set
+    # Generate DATABASE_URL environment file for the container
+    systemd.services.miniflux-env-file = {
+      description = "Generate miniflux DATABASE_URL environment file";
+      after = ["sops-nix.service"];
+      requires = ["sops-nix.service"];
+      wantedBy = ["multi-user.target"];
+      before = ["container@miniflux.service"];
+      requiredBy = ["container@miniflux.service"];
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+        RuntimeDirectory = "miniflux";
+        RuntimeDirectoryMode = "0750";
+      };
+      script = ''
+        # Escape for libpq key-value format: backslashes first, then single quotes
+        PW=$(cat /run/secrets/miniflux_db_password | ${pkgs.gnused}/bin/sed -e 's/\\/\\\\/g' -e "s/'/\\\\'/g")
+        echo "DATABASE_URL=host=${hostAddress} dbname=miniflux user=miniflux password='$PW' sslmode=disable" > /run/miniflux/env
+        chown miniflux:miniflux /run/miniflux/env
+        chmod 0400 /run/miniflux/env
+      '';
+    };
+
+    # Ensure the container waits for database password and env file
     systemd.services."container@miniflux" = {
-      after = ["miniflux-db-password.service"];
-      wants = ["miniflux-db-password.service"];
+      after = ["miniflux-db-password.service" "miniflux-env-file.service"];
+      wants = ["miniflux-db-password.service" "miniflux-env-file.service"];
     };
 
     containers.miniflux = {
@@ -115,6 +140,10 @@ in {
         };
         "/run/secrets/miniflux_db_password" = {
           hostPath = "/run/secrets/miniflux_db_password";
+          isReadOnly = true;
+        };
+        "/run/miniflux/env" = {
+          hostPath = "/run/miniflux/env";
           isReadOnly = true;
         };
       };
@@ -147,18 +176,12 @@ in {
           };
         };
 
-        # Override miniflux service to inject DATABASE_URL with password from secret.
-        # We wrap ExecStart rather than using EnvironmentFile because systemd loads
-        # EnvironmentFile before running ExecStartPre, causing a chicken-and-egg problem.
-        systemd.services.miniflux.serviceConfig.ExecStart = let
-          wrapper = pkgs.writeShellScript "miniflux-wrapper" ''
-            export DATABASE_URL="postgres://miniflux:$(cat /run/secrets/miniflux_db_password)@${hostAddress}/miniflux?sslmode=disable"
-            exec ${pkgs.miniflux}/bin/miniflux
-          '';
-        in
-          lib.mkForce wrapper;
-        # Disable DynamicUser so we use the static miniflux user (uid 993) that owns the secrets
-        systemd.services.miniflux.serviceConfig.DynamicUser = lib.mkForce false;
+        # Use EnvironmentFile for DATABASE_URL (written by host's miniflux-env-file service)
+        systemd.services.miniflux.serviceConfig = {
+          EnvironmentFile = lib.mkForce "/run/miniflux/env";
+          # Disable DynamicUser so we use the static miniflux user (uid 993) that owns the secrets
+          DynamicUser = lib.mkForce false;
+        };
 
         # Allow inbound traffic on miniflux port
         networking.firewall.allowedTCPPorts = [cfg.port];
