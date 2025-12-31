@@ -113,10 +113,10 @@ in {
         RuntimeDirectoryMode = "0750";
       };
       script = ''
-        # Escape for libpq key-value format: backslashes first, then single quotes
-        PW=$(cat /run/secrets/miniflux_db_password | ${pkgs.gnused}/bin/sed -e 's/\\/\\\\/g' -e "s/'/\\\\'/g")
-        # Quote the entire value for systemd EnvironmentFile parsing
-        echo "DATABASE_URL=\"host=${hostAddress} dbname=miniflux user=miniflux password='$PW' sslmode=disable\"" > /run/miniflux/env
+        # URL-encode the password for URI format (handles all special characters)
+        PW=$(${pkgs.python3}/bin/python3 -c "import sys, urllib.parse; print(urllib.parse.quote(sys.stdin.read().rstrip('\n'), safe=''''''), end='''')" < /run/secrets/miniflux_db_password)
+        # URI format avoids libpq key-value escaping; URL-encoded password is systemd-safe
+        echo "DATABASE_URL=postgres://miniflux:$PW@${hostAddress}/miniflux?sslmode=disable" > /run/miniflux/env
         chown miniflux:miniflux /run/miniflux/env
         chmod 0400 /run/miniflux/env
       '';
