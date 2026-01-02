@@ -54,7 +54,7 @@ in {
         WOODPECKER_SERVER_ADDR = "localhost:${toString cfg.port}";
         WOODPECKER_LOG_LEVEL = "debug";
         WOODPECKER_GITEA = "true";
-        WOODPECKER_GITEA_URL = "https://${config.services.gitea-config.subdomain}.${config.services.gitea-config.domain}";
+        WOODPECKER_GITEA_URL = "https://${config.services.gitea-container.subdomain}.${config.services.gitea-container.domain}";
         WOODPECKER_ADMIN = builtins.concatStringsSep "," cfg.admin-users;
         WOODPECKER_GRPC_ADDR = "localhost:${toString cfg.grpc-port}";
       };
