@@ -95,6 +95,9 @@ in {
             Group = "robocop";
             ExecStart = "${robocop}/bin/robocop-server";
             Environment = "PORT=${toString cfg.port}";
+            WorkingDirectory = "/var/lib/robocop";
+            StateDirectory = "robocop";
+            StateDirectoryMode = "0700";
             NoNewPrivileges = true;
             ProtectSystem = "strict";
             ProtectHome = true;
