@@ -127,6 +127,12 @@ in {
       locations."= /ui" = {
         return = "301 /ui/";
       };
+      locations."/openai-dashboard/" = {
+        alias = "${robocop-dashboard}/";
+      };
+      locations."= /openai-dashboard" = {
+        return = "301 /openai-dashboard/";
+      };
       locations."/" = {
         proxyPass = "http://${containerAddress}:${toString cfg.port}/";
         extraConfig = ''
