@@ -108,7 +108,10 @@ in {
         RemainAfterExit = true;
       };
       script = ''
-        ${pkgs.sudo}/bin/sudo -u postgres ${pkgs.postgresql}/bin/psql -c "ALTER USER gitea WITH PASSWORD '$(cat /run/secrets/gitea_server_password)';"
+                ${pkgs.sudo}/bin/sudo -u postgres ${pkgs.postgresql}/bin/psql <<'EOF'
+        \set password `cat /run/secrets/gitea_server_password`
+        ALTER USER gitea WITH PASSWORD :'password';
+        EOF
       '';
     };
 
