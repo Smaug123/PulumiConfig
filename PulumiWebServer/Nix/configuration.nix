@@ -10,25 +10,28 @@
   sshKeys = lib.importJSON ./ssh-keys.json;
   prometheusCfg = config.services.prometheus-container;
 in {
-  imports = [
-    ./sops.nix
-    ./apps/apps.nix
-    ./radicale/radicale-container.nix
-    ./syncthing/syncthing-container.nix
-    ./gitea/gitea-container.nix
-    ./miniflux/miniflux-container.nix
-    ./userconfig.nix
-    ./nginx/nginx.nix
-    ./woodpecker/woodpecker.nix
-    ./prometheus/prometheus-container.nix
-    ./grafana/grafana-container.nix
-    ./puregym/puregym-container.nix
-    ./robocop/robocop-container.nix
-    # generated at runtime by nixos-infect and copied here
-    ./hardware-configuration.nix
-    ./networking.nix
-    # ./whisper/whisper.nix
-  ];
+  imports =
+    [
+      ./sops.nix
+      ./apps/apps.nix
+      ./radicale/radicale-container.nix
+      ./syncthing/syncthing-container.nix
+      ./gitea/gitea-container.nix
+      ./miniflux/miniflux-container.nix
+      ./userconfig.nix
+      ./nginx/nginx.nix
+      ./woodpecker/woodpecker.nix
+      ./prometheus/prometheus-container.nix
+      ./grafana/grafana-container.nix
+      ./puregym/puregym-container.nix
+      ./robocop/robocop-container.nix
+      ./networking.nix
+      # ./whisper/whisper.nix
+    ]
+    ++ [
+      ./hardware/digitalocean.nix
+      # ./hardware/nixbox.nix
+    ];
 
   services.radicale-container.enable = true;
   services.radicale-container.domain = userConfig.domain;
