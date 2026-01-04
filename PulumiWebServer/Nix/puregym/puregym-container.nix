@@ -104,6 +104,8 @@ in {
         systemd.services.puregym-refresh-auth = {
           description = "puregym-refresh-auth";
           wantedBy = ["multi-user.target"];
+          after = ["network-online.target"];
+          wants = ["network-online.target"];
           path = [puregym-client];
           script = builtins.readFile ./refresh-auth.sh;
           serviceConfig = {
@@ -129,7 +131,7 @@ in {
         systemd.services.puregym-server = {
           description = "puregym-server";
           wantedBy = ["multi-user.target"];
-          wants = ["puregym-refresh-auth.service"];
+          requires = ["puregym-refresh-auth.service"];
           after = ["puregym-refresh-auth.service"];
           serviceConfig = {
             Restart = "always";
