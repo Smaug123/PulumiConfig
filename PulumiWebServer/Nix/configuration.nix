@@ -25,13 +25,19 @@ in {
       ./grafana/grafana-container.nix
       ./puregym/puregym-container.nix
       ./robocop/robocop-container.nix
-      ./networking.nix
       # ./whisper/whisper.nix
     ]
-    ++ [
-      ./hardware/digitalocean.nix
-      # ./hardware/nixbox.nix
-    ];
+    ++ (
+      if true
+      then [
+        ./hardware/digitalocean.nix
+        ./networking/digitalocean.nix
+      ]
+      else [
+        ./hardware/nixbox.nix
+        ./networking/nixbox.nix
+      ]
+    );
 
   services.radicale-container.enable = true;
   services.radicale-container.domain = userConfig.domain;
