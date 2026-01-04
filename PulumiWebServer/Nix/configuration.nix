@@ -65,6 +65,7 @@ in {
   services.grafana-container.domain = userConfig.domain;
   services.grafana-container.prometheusUrl = "http://${prometheusCfg.containerAddress}:${toString prometheusCfg.port}";
   services.prometheus-container.enable = true;
+  services.prometheus-container.domain = userConfig.domain;
   services.prometheus-container.domain-exporter-domains = [userConfig.domain];
   services.puregym-container.enable = true;
   services.puregym-container.domain = userConfig.domain;
