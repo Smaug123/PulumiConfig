@@ -108,6 +108,7 @@ in {
 
         # Force NixOS to strictly manage users with declared UIDs
         users.mutableUsers = false;
+        users.allowNoPasswordLogin = true; # Fine for container - accessed via machinectl from host
 
         # Network configuration: use the host as the default gateway for outbound traffic
         networking.defaultGateway = hostAddress;
@@ -164,7 +165,7 @@ in {
         # Copy robots.txt to custom public directory
         systemd.services.gitea.preStart = lib.mkAfter ''
           mkdir -p ${dataDir}/custom/public
-          cp /var/lib/gitea-robots/robots.txt ${dataDir}/custom/public/robots.txt
+          install -m 644 /var/lib/gitea-robots/robots.txt ${dataDir}/custom/public/robots.txt
         '';
 
         # The Gitea module does not allow adding users declaratively
