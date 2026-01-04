@@ -12,6 +12,16 @@
 in {
   options.services.prometheus-container = {
     enable = lib.mkEnableOption "Prometheus monitoring (containerised)";
+    domain = lib.mkOption {
+      type = lib.types.str;
+      example = "example.com";
+      description = lib.mdDoc "Top-level domain to configure";
+    };
+    subdomain = lib.mkOption {
+      type = lib.types.str;
+      default = "prometheus";
+      description = lib.mdDoc "Subdomain for Prometheus web UI";
+    };
     containerAddress = lib.mkOption {
       type = lib.types.str;
       description = lib.mdDoc "IP address of the Prometheus container";
@@ -173,6 +183,15 @@ in {
 
         # Allow inbound traffic on prometheus port
         networking.firewall.allowedTCPPorts = [cfg.port];
+      };
+    };
+
+    # nginx on the host proxies to the container
+    services.nginx.virtualHosts."${cfg.subdomain}.${cfg.domain}" = {
+      forceSSL = true;
+      enableACME = true;
+      locations."/" = {
+        proxyPass = "http://${cfg.containerAddress}:${toString cfg.port}/";
       };
     };
   };
