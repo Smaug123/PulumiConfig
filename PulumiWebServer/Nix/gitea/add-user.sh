@@ -52,13 +52,11 @@ if [ -n "$WOODPECKER_OAUTH_REDIRECT" ]; then
   # Create the OAuth app if we don't have valid credentials
   if [ ! -f "$OAUTH_ID_FILE" ] || [ ! -f "$OAUTH_SECRET_FILE" ]; then
     echo "Creating Woodpecker OAuth2 application..."
-    RESPONSE=$(curl -sf -X POST \
+    if RESPONSE=$(curl -sf -X POST \
       -u "${GITEA_ADMIN_USERNAME}:${PASSWORD}" \
       -H "Content-Type: application/json" \
       -d "{\"name\": \"Woodpecker CI\", \"redirect_uris\": [\"${WOODPECKER_OAUTH_REDIRECT}\"], \"confidential_client\": true}" \
-      "${GITEA_API}/user/applications/oauth2")
-
-    if [ $? -eq 0 ]; then
+      "${GITEA_API}/user/applications/oauth2"); then
       CLIENT_ID=$(echo "$RESPONSE" | jq -r '.client_id')
       CLIENT_SECRET=$(echo "$RESPONSE" | jq -r '.client_secret')
 
