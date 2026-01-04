@@ -25,8 +25,8 @@ rm "$TMPFILE"
 
 # Create Woodpecker OAuth2 application if configured
 if [ -n "$WOODPECKER_OAUTH_REDIRECT" ]; then
-  OAUTH_ID_FILE="/preserve/gitea/woodpecker-oauth-id"
-  OAUTH_SECRET_FILE="/preserve/gitea/woodpecker-oauth-secret"
+  OAUTH_ID_FILE="/preserve/gitea/data/woodpecker-oauth-id"
+  OAUTH_SECRET_FILE="/preserve/gitea/data/woodpecker-oauth-secret"
   GITEA_API="http://localhost:${GITEA_PORT}/api/v1"
 
   # Wait for Gitea API to be ready

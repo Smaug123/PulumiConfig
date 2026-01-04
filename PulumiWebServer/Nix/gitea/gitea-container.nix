@@ -33,7 +33,7 @@ in {
       type = lib.types.nullOr lib.types.str;
       default = null;
       example = "https://woodpecker.example.com/authorize";
-      description = lib.mdDoc "If set, creates a Woodpecker OAuth2 application with this redirect URI. Credentials are written to /preserve/gitea/woodpecker-oauth-*.";
+      description = lib.mdDoc "If set, creates a Woodpecker OAuth2 application with this redirect URI. Credentials are written to /preserve/gitea/data/woodpecker-oauth-*.";
     };
   };
 

@@ -1,8 +1,8 @@
 #!/bin/sh
 
 # Wait for Gitea to create the OAuth credentials (created by gitea-add-user inside container)
-GITEA_OAUTH_ID_FILE="/preserve/gitea/woodpecker-oauth-id"
-GITEA_OAUTH_SECRET_FILE="/preserve/gitea/woodpecker-oauth-secret"
+GITEA_OAUTH_ID_FILE="/preserve/gitea/data/woodpecker-oauth-id"
+GITEA_OAUTH_SECRET_FILE="/preserve/gitea/data/woodpecker-oauth-secret"
 
 echo "Waiting for Gitea OAuth credentials..."
 timeout=300
