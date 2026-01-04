@@ -24,7 +24,7 @@ class MyHandler(BaseHTTPRequestHandler):
 
     def _get_fullness(self, gym_id: int) -> bytes:
         if abs(datetime.now() - self._last_accessed_by_id[gym_id]) > timedelta(seconds=30):
-            token = subprocess.check_output(['cat', '/tmp/puregym_token']).strip()
+            token = subprocess.check_output(['cat', token_path]).strip()
             output = subprocess.check_output(
                 [puregym, 'fullness', '--bearer-token', token, '--gym-id', str(gym_id)], text=True,
                 encoding='utf-8')
@@ -37,7 +37,7 @@ class MyHandler(BaseHTTPRequestHandler):
 
     def _refresh_gyms(self) -> None:
         if self._last_refreshed_gyms < datetime.now() - timedelta(days=1):
-            token = subprocess.check_output(['cat', '/tmp/puregym_token']).strip()
+            token = subprocess.check_output(['cat', token_path]).strip()
             output = subprocess.check_output(
                 [puregym, 'all-gyms', '--bearer-token', token, '--terse', 'true'], text=True,
                 encoding='utf-8')
@@ -88,7 +88,7 @@ class MyHandler(BaseHTTPRequestHandler):
             output = self._get_fullness(desired_gym_id)
         elif desired_gym_name is not None:
             if abs(datetime.now() - self._last_accessed_by_name[desired_gym_name]) > timedelta(seconds=30):
-                token = subprocess.check_output(['cat', '/tmp/puregym_token']).strip()
+                token = subprocess.check_output(['cat', token_path]).strip()
                 completed_process = subprocess.run(
                     [puregym, 'fullness', '--bearer-token', token, '--gym-name', desired_gym_name], text=True,
                     encoding='utf-8', stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
@@ -155,5 +155,6 @@ class MyHandler(BaseHTTPRequestHandler):
 if __name__ == '__main__':
     puregym = os.environ["PUREGYM_CLIENT"]
     port = int(os.environ["PUREGYM_PORT"])
+    token_path = os.environ["PUREGYM_TOKEN_PATH"]
     server = HTTPServer(('0.0.0.0', port), MyHandler)
     server.serve_forever()
