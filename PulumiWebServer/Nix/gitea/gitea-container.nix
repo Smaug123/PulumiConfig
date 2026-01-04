@@ -29,6 +29,12 @@ in {
       description = lib.mdDoc "Gitea port inside container";
       default = 3001;
     };
+    woodpecker-oauth-redirect = lib.mkOption {
+      type = lib.types.nullOr lib.types.str;
+      default = null;
+      example = "https://woodpecker.example.com/authorize";
+      description = lib.mdDoc "If set, creates a Woodpecker OAuth2 application with this redirect URI. Credentials are written to /preserve/gitea/data/woodpecker-oauth-*.";
+    };
   };
 
   config = lib.mkIf cfg.enable {
@@ -100,6 +106,10 @@ in {
       in {
         system.stateVersion = "23.05";
 
+        # Force NixOS to strictly manage users with declared UIDs
+        users.mutableUsers = false;
+        users.allowNoPasswordLogin = true; # Fine for container - accessed via machinectl from host
+
         # Network configuration: use the host as the default gateway for outbound traffic
         networking.defaultGateway = hostAddress;
 
@@ -155,7 +165,7 @@ in {
         # Copy robots.txt to custom public directory
         systemd.services.gitea.preStart = lib.mkAfter ''
           mkdir -p ${dataDir}/custom/public
-          cp /var/lib/gitea-robots/robots.txt ${dataDir}/custom/public/robots.txt
+          install -m 644 /var/lib/gitea-robots/robots.txt ${dataDir}/custom/public/robots.txt
         '';
 
         # The Gitea module does not allow adding users declaratively
@@ -164,7 +174,7 @@ in {
           after = ["gitea.service"];
           requires = ["gitea.service"];
           wantedBy = ["multi-user.target"];
-          path = [pkgs.gitea];
+          path = [pkgs.gitea pkgs.curl pkgs.jq];
           script = builtins.readFile ./add-user.sh;
           serviceConfig = {
             Restart = "no";
@@ -173,10 +183,15 @@ in {
             Group = "gitea";
             WorkingDirectory = dataDir;
           };
-          environment = {
-            GITEA_WORK_DIR = dataDir;
-            GITEA = "${pkgs.gitea}/bin/gitea";
-          };
+          environment =
+            {
+              GITEA_WORK_DIR = dataDir;
+              GITEA = "${pkgs.gitea}/bin/gitea";
+              GITEA_PORT = toString cfg.port;
+            }
+            // lib.optionalAttrs (cfg.woodpecker-oauth-redirect != null) {
+              WOODPECKER_OAUTH_REDIRECT = cfg.woodpecker-oauth-redirect;
+            };
         };
 
         # Allow inbound traffic on gitea port

@@ -52,6 +52,7 @@ in {
   services.gitea-container.enable = true;
   services.gitea-container.subdomain = "gitea";
   services.gitea-container.domain = userConfig.domain;
+  services.gitea-container.woodpecker-oauth-redirect = "https://woodpecker.${userConfig.domain}/authorize";
   services.miniflux-container.enable = true;
   services.miniflux-container.subdomain = "rss";
   services.miniflux-container.domain = userConfig.domain;
