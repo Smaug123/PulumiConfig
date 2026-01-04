@@ -13,10 +13,6 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    sops = {
-      url = "github:Mic92/sops-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
     whisper-packages = {
       url = "github:Smaug123/whisper.cpp/nix-small";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -34,7 +30,6 @@
   outputs = {
     self,
     nixpkgs,
-    sops,
     home-manager,
     website,
     puregym-client,
@@ -56,7 +51,6 @@
       };
       modules = [
         ./configuration.nix
-        sops.nixosModules.sops
       ];
     };
     nix.registry.nixpkgs.flake = nixpkgs;

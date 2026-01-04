@@ -44,17 +44,7 @@ in {
     };
     users.groups.grafana.gid = 989;
 
-    # Secrets are decrypted on the host and bind-mounted into the container.
-    sops.secrets = {
-      "grafana_admin_password" = {
-        owner = "grafana";
-        group = "grafana";
-      };
-      "grafana_secret_key" = {
-        owner = "grafana";
-        group = "grafana";
-      };
-    };
+    # Secrets are managed by json-secrets and bind-mounted into the container.
 
     # Ensure the data directory exists and is owned by grafana
     systemd.tmpfiles.rules = [

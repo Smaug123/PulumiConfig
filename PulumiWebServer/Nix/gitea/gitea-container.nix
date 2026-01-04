@@ -48,21 +48,7 @@ in {
       externalInterface = primaryInterface;
     };
 
-    # Secrets are decrypted on the host and bind-mounted into the container.
-    sops.secrets = {
-      "gitea_admin_password" = {
-        owner = "gitea";
-        group = "gitea";
-      };
-      "gitea_admin_username" = {
-        owner = "gitea";
-        group = "gitea";
-      };
-      "gitea_admin_email" = {
-        owner = "gitea";
-        group = "gitea";
-      };
-    };
+    # Secrets are managed by json-secrets and bind-mounted into the container.
 
     # Ensure the data directory exists and is owned by gitea
     systemd.tmpfiles.rules = [

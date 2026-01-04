@@ -44,22 +44,7 @@ in {
     };
     users.groups.radicale.gid = 993;
 
-    # Secrets are decrypted on the host and bind-mounted into the container.
-    # They must be readable by the radicale user.
-    sops.secrets = {
-      "radicale_user" = {
-        owner = "radicale";
-        group = "radicale";
-      };
-      "radicale_htcrypt_password" = {
-        owner = "radicale";
-        group = "radicale";
-      };
-      "radicale_git_email" = {
-        owner = "radicale";
-        group = "radicale";
-      };
-    };
+    # Secrets are managed by json-secrets and bind-mounted into the container.
 
     # Ensure the data directory exists and is owned by radicale
     # d = create if missing, Z = recursively fix ownership (- for mode = don't change)
