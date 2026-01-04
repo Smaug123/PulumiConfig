@@ -48,15 +48,8 @@ in {
       externalInterface = primaryInterface;
     };
 
-    # Allow container to connect to PostgreSQL on the host
-    networking.firewall.interfaces."ve-gitea".allowedTCPPorts = [5432];
-
     # Secrets are decrypted on the host and bind-mounted into the container.
     sops.secrets = {
-      "gitea_server_password" = {
-        owner = "gitea";
-        group = "gitea";
-      };
       "gitea_admin_password" = {
         owner = "gitea";
         group = "gitea";
@@ -77,50 +70,6 @@ in {
       "Z ${dataDir} - gitea gitea -"
     ];
 
-    # PostgreSQL on host needs to listen on bridge and allow gitea connections
-    services.postgresql = {
-      enable = true;
-      enableTCPIP = true;
-      settings = {
-        listen_addresses = lib.mkForce "localhost,${hostAddress}";
-      };
-      authentication = lib.mkAfter ''
-        # Allow gitea container to connect via TCP with password
-        host gitea gitea ${containerAddress}/32 md5
-      '';
-      ensureDatabases = ["gitea"];
-      ensureUsers = [
-        {
-          name = "gitea";
-          ensureDBOwnership = true;
-        }
-      ];
-    };
-
-    # Set gitea password after PostgreSQL starts
-    systemd.services.gitea-db-password = {
-      description = "Set gitea PostgreSQL password";
-      after = ["postgresql.service"];
-      requires = ["postgresql.service"];
-      wantedBy = ["multi-user.target"];
-      serviceConfig = {
-        Type = "oneshot";
-        RemainAfterExit = true;
-      };
-      script = ''
-                ${pkgs.sudo}/bin/sudo -u postgres ${pkgs.postgresql}/bin/psql <<'EOF'
-        \set password `cat /run/secrets/gitea_server_password`
-        ALTER USER gitea WITH PASSWORD :'password';
-        EOF
-      '';
-    };
-
-    # Ensure the container waits for the database password to be set
-    systemd.services."container@gitea" = {
-      after = ["gitea-db-password.service"];
-      wants = ["gitea-db-password.service"];
-    };
-
     containers.gitea = {
       autoStart = true;
       privateNetwork = true;
@@ -131,10 +80,6 @@ in {
         "${dataDir}" = {
           hostPath = dataDir;
           isReadOnly = false;
-        };
-        "/run/secrets/gitea_server_password" = {
-          hostPath = "/run/secrets/gitea_server_password";
-          isReadOnly = true;
         };
         "/run/secrets/gitea_admin_password" = {
           hostPath = "/run/secrets/gitea_admin_password";
@@ -180,14 +125,8 @@ in {
           lfs.enable = true;
           stateDir = dataDir;
           database = {
-            type = "postgres";
-            host = hostAddress;
-            port = 5432;
-            name = "gitea";
-            user = "gitea";
-            passwordFile = "/run/secrets/gitea_server_password";
-            # Don't create DB locally - we use the host's PostgreSQL
-            createDatabase = false;
+            type = "sqlite3";
+            path = "${dataDir}/gitea.db";
           };
           settings = {
             mailer = {
