@@ -48,6 +48,8 @@ in {
       externalInterface = primaryInterface;
     };
 
+    # Secrets are managed by json-secrets and bind-mounted into the container.
+
     containers.robocop = {
       autoStart = true;
       privateNetwork = true;
@@ -55,8 +57,28 @@ in {
       localAddress = containerAddress;
 
       bindMounts = {
-        "/etc/robocop/env" = {
-          hostPath = "/etc/robocop/env";
+        "/run/secrets/robocop_github_app_id" = {
+          hostPath = "/run/secrets/robocop_github_app_id";
+          isReadOnly = true;
+        };
+        "/run/secrets/robocop_github_private_key" = {
+          hostPath = "/run/secrets/robocop_github_private_key";
+          isReadOnly = true;
+        };
+        "/run/secrets/robocop_github_webhook_secret" = {
+          hostPath = "/run/secrets/robocop_github_webhook_secret";
+          isReadOnly = true;
+        };
+        "/run/secrets/robocop_openai_api_key" = {
+          hostPath = "/run/secrets/robocop_openai_api_key";
+          isReadOnly = true;
+        };
+        "/run/secrets/robocop_target_github_user_id" = {
+          hostPath = "/run/secrets/robocop_target_github_user_id";
+          isReadOnly = true;
+        };
+        "/run/secrets/robocop_status_auth_token" = {
+          hostPath = "/run/secrets/robocop_status_auth_token";
           isReadOnly = true;
         };
         # Bind-mount the robocop package from the host's nix store
@@ -94,7 +116,6 @@ in {
             User = "robocop";
             Group = "robocop";
             ExecStart = "${robocop}/bin/robocop-server";
-            Environment = "PORT=${toString cfg.port}";
             WorkingDirectory = "/var/lib/robocop";
             StateDirectory = "robocop";
             StateDirectoryMode = "0700";
@@ -105,7 +126,16 @@ in {
             ProtectKernelTunables = true;
             ProtectKernelModules = true;
             ProtectControlGroups = true;
-            EnvironmentFile = "/etc/robocop/env";
+          };
+          environment = {
+            PORT = toString cfg.port;
+            STATE_DIR = "/var/lib/robocop";
+            GITHUB_APP_ID_FILE = "/run/secrets/robocop_github_app_id";
+            GITHUB_PRIVATE_KEY_FILE = "/run/secrets/robocop_github_private_key";
+            GITHUB_WEBHOOK_SECRET_FILE = "/run/secrets/robocop_github_webhook_secret";
+            OPENAI_API_KEY_FILE = "/run/secrets/robocop_openai_api_key";
+            TARGET_GITHUB_USER_ID_FILE = "/run/secrets/robocop_target_github_user_id";
+            STATUS_AUTH_TOKEN_FILE = "/run/secrets/robocop_status_auth_token";
           };
         };
 
