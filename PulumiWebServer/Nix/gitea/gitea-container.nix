@@ -103,7 +103,14 @@ in {
         # Network configuration: use the host as the default gateway for outbound traffic
         networking.defaultGateway = hostAddress;
 
-        # The gitea user is created by services.gitea with auto-allocated UID/GID (994:992)
+        # Explicitly create gitea user/group with UIDs matching the host
+        users.users.gitea = {
+          uid = 994;
+          isSystemUser = true;
+          group = "gitea";
+          home = dataDir;
+        };
+        users.groups.gitea.gid = 992;
 
         services.gitea = {
           enable = true;
