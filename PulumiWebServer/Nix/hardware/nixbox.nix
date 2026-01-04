@@ -16,6 +16,13 @@
   boot.initrd.kernelModules = [];
   boot.kernelModules = ["kvm-amd"];
   boot.extraModulePackages = [];
+  boot.loader.grub = {
+    enable = true;
+    devices = [
+      "/dev/disk/by-id/ata-SAMSUNG_HD204UI_S2H7JD2B115472"
+      "/dev/disk/by-id/ata-WDC_WD20EFRX-68AX9N0_WD-WMC1T3109856"
+    ];
+  };
 
   fileSystems."/" = {
     device = "/dev/disk/by-uuid/2f9dd7d9-e3dd-4b1c-9de8-9a1a3f2fbded";
