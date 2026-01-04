@@ -50,6 +50,7 @@
 
     system.activationScripts = {
       create-website = ''
+        mkdir -p /preserve/www
         ln -sfn ${website} /preserve/www/html
       '';
     };
