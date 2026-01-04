@@ -24,10 +24,11 @@ in {
     ./grafana/grafana-container.nix
     ./puregym/puregym-container.nix
     ./robocop/robocop-container.nix
-    # generated at runtime by nixos-infect and copied here
-    ./hardware-configuration.nix
     ./networking.nix
     # ./whisper/whisper.nix
+  ] ++ [
+    ./hardware/digitalocean.nix
+    # ./hardware/nixbox.nix
   ];
 
   services.radicale-container.enable = true;
