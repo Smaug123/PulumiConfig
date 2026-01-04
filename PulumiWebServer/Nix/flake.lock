@@ -46,6 +46,21 @@
         "type": "github"
       }
     },
+    "crane": {
+      "locked": {
+        "lastModified": 1767461147,
+        "narHash": "sha256-TH/xTeq/RI+DOzo+c+4F431eVuBpYVwQwBxzURe7kcI=",
+        "owner": "ipetkov",
+        "repo": "crane",
+        "rev": "7d59256814085fd9666a2ae3e774dc5ee216b630",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ipetkov",
+        "repo": "crane",
+        "type": "github"
+      }
+    },
     "extra-content": {
       "flake": false,
       "locked": {
@@ -359,6 +374,7 @@
     },
     "robocop": {
       "inputs": {
+        "crane": "crane",
         "flake-utils": "flake-utils_2",
         "nixpkgs": [
           "nixpkgs"
@@ -366,11 +382,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1767551545,
-        "narHash": "sha256-3QWpBoxg4oyjcwaaHa4JobwOBzf23OBqS1r5/FyuQhM=",
+        "lastModified": 1767554698,
+        "narHash": "sha256-e9ONv/mYR3mzj6ur9EnNs2lT6OZf2KoWG6NSFGg11JY=",
         "owner": "Smaug123",
         "repo": "robocop",
-        "rev": "3ee952e4bdd69436652fa43723f0dc1991bf44e6",
+        "rev": "56ea1d620b33d5a89dae824c162c0ced1fac604e",
         "type": "github"
       },
       "original": {
