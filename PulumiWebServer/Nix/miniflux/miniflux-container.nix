@@ -92,7 +92,10 @@ in {
         RemainAfterExit = true;
       };
       script = ''
-        ${pkgs.sudo}/bin/sudo -u postgres ${pkgs.postgresql}/bin/psql -c "ALTER USER miniflux WITH PASSWORD '$(cat /run/secrets/miniflux_db_password)';"
+                ${pkgs.sudo}/bin/sudo -u postgres ${pkgs.postgresql}/bin/psql <<'EOF'
+        \set password `cat /run/secrets/miniflux_db_password`
+        ALTER USER miniflux WITH PASSWORD :'password';
+        EOF
       '';
     };
 
