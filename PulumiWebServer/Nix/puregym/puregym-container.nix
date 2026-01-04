@@ -10,6 +10,9 @@
   # Container networking
   hostAddress = "192.168.100.1";
   containerAddress = "192.168.100.5";
+  # Token path on host (transient, survives container restarts but not host reboots)
+  hostTokenDir = "/run/puregym";
+  tokenPath = "/run/puregym/token";
 in {
   options.services.puregym-container = {
     enable = lib.mkEnableOption "PureGym attendance tracking (containerised)";
@@ -47,6 +50,11 @@ in {
       externalInterface = primaryInterface;
     };
 
+    # Create transient token directory on host (survives container restarts, cleared on host reboot)
+    systemd.tmpfiles.rules = [
+      "d ${hostTokenDir} 0750 puregym puregym -"
+    ];
+
     # Secrets are managed by json-secrets and bind-mounted into the container.
 
     containers.puregym = {
@@ -63,6 +71,11 @@ in {
         "/run/secrets/puregym_pin" = {
           hostPath = "/run/secrets/puregym_pin";
           isReadOnly = true;
+        };
+        # Token directory: writable, persists across container restarts (but not host reboots)
+        ${hostTokenDir} = {
+          hostPath = hostTokenDir;
+          isReadOnly = false;
         };
         # Mount the entire nix store so the .NET runtime can access all its dependencies.
         # Unlike Rust binaries which are statically linked, .NET apps have many runtime
@@ -98,6 +111,11 @@ in {
           wants = ["network-online.target"];
           path = [puregym-client];
           script = builtins.readFile ./refresh-auth.sh;
+          unitConfig = {
+            # Skip auth if token already exists (e.g., container restart with valid token)
+            # The monthly timer ignores this condition, so scheduled refreshes still work
+            ConditionPathExists = "!${tokenPath}";
+          };
           serviceConfig = {
             Restart = "no";
             Type = "oneshot";
@@ -106,6 +124,7 @@ in {
           };
           environment = {
             PUREGYM = "${puregym-client}/bin/PureGym.App";
+            PUREGYM_TOKEN_PATH = tokenPath;
           };
         };
 
@@ -121,7 +140,8 @@ in {
         systemd.services.puregym-server = {
           description = "puregym-server";
           wantedBy = ["multi-user.target"];
-          requires = ["puregym-refresh-auth.service"];
+          # Use 'wants' not 'requires': server can start with existing token even if auth was skipped
+          wants = ["puregym-refresh-auth.service"];
           after = ["puregym-refresh-auth.service"];
           serviceConfig = {
             Restart = "always";
@@ -133,6 +153,7 @@ in {
           environment = {
             PUREGYM_CLIENT = "${puregym-client}/bin/PureGym.App";
             PUREGYM_PORT = toString cfg.port;
+            PUREGYM_TOKEN_PATH = tokenPath;
           };
         };
 
