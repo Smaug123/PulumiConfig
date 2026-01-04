@@ -60,7 +60,6 @@
               [
                 pkgs.pulumi-bin
                 pkgs.apacheHttpd
-                pkgs.sops
                 pkgs.age
                 pkgs.ssh-to-age
                 pkgs.nixos-rebuild
