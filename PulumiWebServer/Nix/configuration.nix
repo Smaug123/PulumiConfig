@@ -48,7 +48,7 @@ in {
   services.nginx-config.domain = userConfig.domain;
   services.nginx-config.email = userConfig.acmeEmail;
   services.nginx-config.webrootSubdomain = "www";
-  services.nginx-config.staging = false;
+  services.nginx-config.staging = true;
   services.gitea-container.enable = true;
   services.gitea-container.subdomain = "gitea";
   services.gitea-container.domain = userConfig.domain;
