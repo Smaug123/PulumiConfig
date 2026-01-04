@@ -74,6 +74,8 @@ in {
     systemd.services.woodpecker-secret = {
       description = "ensure woodpecker secrets are in place";
       wantedBy = ["multi-user.target" "woodpecker-server.service" "woodpecker-agent-docker-agent.service"];
+      after = ["container@gitea.service"];
+      wants = ["container@gitea.service"];
       before = ["woodpecker-server.service" "woodpecker-agent-docker-agent.service"];
       script = builtins.readFile ./secrets.sh;
       serviceConfig = {
