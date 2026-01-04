@@ -366,11 +366,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1767361524,
-        "narHash": "sha256-kGU5rP1oH9/enmjTlHYBLSeNHZN95ytCJZmZwo6zsAo=",
+        "lastModified": 1767551545,
+        "narHash": "sha256-3QWpBoxg4oyjcwaaHa4JobwOBzf23OBqS1r5/FyuQhM=",
         "owner": "Smaug123",
         "repo": "robocop",
-        "rev": "fd38f875825668290e586382f0cf4e6b6964bbd7",
+        "rev": "3ee952e4bdd69436652fa43723f0dc1991bf44e6",
         "type": "github"
       },
       "original": {
