@@ -106,6 +106,9 @@ in {
       in {
         system.stateVersion = "23.05";
 
+        # Force NixOS to strictly manage users with declared UIDs
+        users.mutableUsers = false;
+
         # Network configuration: use the host as the default gateway for outbound traffic
         networking.defaultGateway = hostAddress;
 
