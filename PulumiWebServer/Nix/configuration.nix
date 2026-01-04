@@ -12,7 +12,6 @@
 in {
   imports =
     [
-      ./sops.nix
       ./apps/apps.nix
       ./radicale/radicale-container.nix
       ./syncthing/syncthing-container.nix
@@ -25,6 +24,7 @@ in {
       ./grafana/grafana-container.nix
       ./puregym/puregym-container.nix
       ./robocop/robocop-container.nix
+      ./secrets/secrets.nix
       # ./whisper/whisper.nix
     ]
     ++ (
@@ -77,6 +77,8 @@ in {
   services.robocop-container.enable = true;
   services.robocop-container.subdomain = "robocop";
   services.robocop-container.domain = userConfig.domain;
+
+  services.json-secrets.enable = true;
 
   services.journald.extraConfig = "SystemMaxUse=100M";
 

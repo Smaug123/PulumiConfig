@@ -48,17 +48,7 @@ in {
     # Allow container to connect to PostgreSQL on the host
     networking.firewall.interfaces."ve-miniflux".allowedTCPPorts = [5432];
 
-    # Secrets are decrypted on the host and bind-mounted into the container.
-    sops.secrets = {
-      "miniflux_admin_password" = {
-        owner = "miniflux";
-        group = "miniflux";
-      };
-      "miniflux_db_password" = {
-        owner = "miniflux";
-        group = "miniflux";
-      };
-    };
+    # Secrets are managed by json-secrets and bind-mounted into the container.
 
     # PostgreSQL on host needs to listen on bridge and allow miniflux connections
     services.postgresql = {
@@ -80,6 +70,24 @@ in {
         }
       ];
     };
+
+    # Create network interface before PostgreSQL starts
+    systemd.services.container-network-miniflux = {
+      description = "Setup miniflux container network";
+      wantedBy = ["multi-user.target"];
+      before = ["postgresql.service" "container@miniflux.service"];
+      serviceConfig = {
+        Type = "oneshot";
+        RemainAfterExit = true;
+      };
+      script = ''
+        # Add host address to loopback (idempotent)
+        ${pkgs.iproute2}/bin/ip addr add ${hostAddress}/32 dev lo 2>/dev/null || true
+      '';
+    };
+
+    systemd.services.postgresql.after = ["container-network-miniflux.service"];
+    systemd.services.postgresql.wants = ["container-network-miniflux.service"];
 
     # Set miniflux password after PostgreSQL starts
     systemd.services.miniflux-db-password = {

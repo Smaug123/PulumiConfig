@@ -47,17 +47,7 @@ in {
       externalInterface = primaryInterface;
     };
 
-    # Secrets are decrypted on the host and bind-mounted into the container.
-    sops.secrets = {
-      "puregym_email" = {
-        owner = "puregym";
-        group = "puregym";
-      };
-      "puregym_pin" = {
-        owner = "puregym";
-        group = "puregym";
-      };
-    };
+    # Secrets are managed by json-secrets and bind-mounted into the container.
 
     containers.puregym = {
       autoStart = true;
