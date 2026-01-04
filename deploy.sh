@@ -7,34 +7,19 @@ NIX_FLAKE="$1"
 
 if [ ! -d "$NIX_FLAKE" ]; then
     echo "Flake directory $NIX_FLAKE does not exist; aborting" 1>&2
+    echo "usage: deploy.sh PATH_TO_FLAKE_DIR REMOTE_HOST" 1>&2
     exit 1
 fi
 
-DOMAIN="$(jq -r .domain "$1/config.json")"
+REMOTE_MACHINE="$2"
 
-echo "Domain: $DOMAIN"
-
-# TODO this somehow failed to find the right key
-AGE_KEY="$(ssh-keyscan "$DOMAIN" | ssh-to-age | tail -1 2>/dev/null)"
-
-if [ -e "/tmp/networking.nix" ]; then
-    mv "/tmp/networking.nix" "$NIX_FLAKE"
+if [ -z "$REMOTE_MACHINE" ]; then
+    echo "usage: deploy.sh PATH_TO_FLAKE_DIR REMOTE_HOST" 1>&2
+    exit 2
 fi
 
-if [ -e "/tmp/hardware-configuration.nix" ]; then
-    mv "/tmp/hardware-configuration.nix" "$NIX_FLAKE"
-fi
-
-if [ -e "/tmp/ssh-keys.json" ]; then
-    mv "/tmp/ssh-keys.json" "$NIX_FLAKE"
-fi
-
-if [ -n "$AGE_KEY" ]; then
-    sed -i -E "s!  - &staging_server.+!  - \&staging_server '$AGE_KEY'!g" .sops.yaml || exit 2
-fi
-
-sops updatekeys "$NIX_FLAKE/secrets/staging.json" || exit 3
+echo "Domain: $REMOTE_MACHINE"
 
 cd "$NIX_FLAKE" || exit 4
 
-nixos-rebuild switch --keep-going --show-trace --no-reexec --flake .#default --target-host "root@$DOMAIN" --build-host "root@$DOMAIN" || exit
+nixos-rebuild switch --keep-going --show-trace --no-reexec --flake .#default --target-host "root@$REMOTE_MACHINE" --build-host "root@$REMOTE_MACHINE" || exit
