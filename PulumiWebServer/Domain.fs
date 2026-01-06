@@ -106,6 +106,7 @@ type WellKnownSubdomain =
     | Whisper
     | Robocop
     | Syncthing
+    | OnATrain
 
     override this.ToString () =
         match this with
@@ -121,6 +122,7 @@ type WellKnownSubdomain =
         | WellKnownSubdomain.Whisper -> "whisper"
         | WellKnownSubdomain.Robocop -> "robocop"
         | WellKnownSubdomain.Syncthing -> "syncthing"
+        | WellKnownSubdomain.OnATrain -> "onatrain"
 
     static member Parse (s : string) =
         match s with
@@ -136,6 +138,7 @@ type WellKnownSubdomain =
         | "whisper" -> WellKnownSubdomain.Whisper
         | "robocop" -> WellKnownSubdomain.Robocop
         | "syncthing" -> WellKnownSubdomain.Syncthing
+        | "onatrain" -> WellKnownSubdomain.OnATrain
         | _ -> failwith $"Failed to deserialise: {s}"
 
 
