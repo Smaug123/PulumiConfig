@@ -24,6 +24,7 @@ in {
       ./grafana/grafana-container.nix
       ./puregym/puregym-container.nix
       ./robocop/robocop-container.nix
+      ./onatrain/onatrain-container.nix
       ./secrets/secrets.nix
       # ./whisper/whisper.nix
     ]
@@ -79,6 +80,9 @@ in {
   services.robocop-container.enable = true;
   services.robocop-container.subdomain = "robocop";
   services.robocop-container.domain = userConfig.domain;
+  services.onatrain-container.enable = true;
+  services.onatrain-container.subdomain = "onatrain";
+  services.onatrain-container.domain = userConfig.domain;
 
   services.json-secrets.enable = true;
 
