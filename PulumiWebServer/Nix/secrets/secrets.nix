@@ -46,6 +46,7 @@ in {
         "container@miniflux.service"
         "container@puregym.service"
         "container@robocop.service"
+        "container@onatrain.service"
         "container@grafana.service"
         "container@prometheus.service"
         "container@syncthing.service"
@@ -84,6 +85,8 @@ in {
     systemd.services."container@puregym".wants = ["json-secrets.service"];
     systemd.services."container@robocop".after = ["json-secrets.service"];
     systemd.services."container@robocop".wants = ["json-secrets.service"];
+    systemd.services."container@onatrain".after = ["json-secrets.service"];
+    systemd.services."container@onatrain".wants = ["json-secrets.service"];
     systemd.services."container@grafana".after = ["json-secrets.service"];
     systemd.services."container@grafana".wants = ["json-secrets.service"];
     systemd.services."container@prometheus".after = ["json-secrets.service"];

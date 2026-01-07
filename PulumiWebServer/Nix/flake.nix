@@ -25,6 +25,10 @@
       url = "github:Smaug123/robocop-dashboard";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    onatrain = {
+      url = "github:Smaug123/train-planner";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {
@@ -36,6 +40,7 @@
     whisper-packages,
     robocop,
     robocop-dashboard,
+    onatrain,
   } @ inputs: let
     system = "x86_64-linux";
   in {
@@ -48,6 +53,7 @@
         whisper-packages = whisper-packages.packages.${system};
         robocop = robocop.packages.${system}.default;
         robocop-dashboard = robocop-dashboard.packages.${system}.default;
+        onatrain = onatrain.packages.${system}.default;
       };
       modules = [
         ./configuration.nix
