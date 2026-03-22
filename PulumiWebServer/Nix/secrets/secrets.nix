@@ -37,22 +37,41 @@ in {
     systemd.services.json-secrets = {
       description = "Decrypt secrets from JSON";
       wantedBy = ["multi-user.target"];
-      before = [
-        "gitea-db-password.service"
-        "miniflux-db-password.service"
-        "woodpecker-secret.service"
-        "container@gitea.service"
-        "container@radicale.service"
-        "container@miniflux.service"
-        "container@puregym.service"
-        "container@robocop.service"
-        "container@onatrain.service"
-        "container@grafana.service"
-        "container@prometheus.service"
-        "container@syncthing.service"
-        "woodpecker-server.service"
-        "woodpecker-agent-docker-agent.service"
-      ];
+      before =
+        lib.optionals config.services.gitea-container.enable [
+          "gitea-db-password.service"
+          "container@gitea.service"
+        ]
+        ++ lib.optionals config.services.miniflux-container.enable [
+          "miniflux-db-password.service"
+          "container@miniflux.service"
+        ]
+        ++ lib.optionals config.services.woodpecker-config.enable [
+          "woodpecker-secret.service"
+          "woodpecker-server.service"
+          "woodpecker-agent-docker-agent.service"
+        ]
+        ++ lib.optionals config.services.radicale-container.enable [
+          "container@radicale.service"
+        ]
+        ++ lib.optionals config.services.puregym-container.enable [
+          "container@puregym.service"
+        ]
+        ++ lib.optionals config.services.robocop-container.enable [
+          "container@robocop.service"
+        ]
+        ++ lib.optionals config.services.onatrain-container.enable [
+          "container@onatrain.service"
+        ]
+        ++ lib.optionals config.services.grafana-container.enable [
+          "container@grafana.service"
+        ]
+        ++ lib.optionals config.services.prometheus-container.enable [
+          "container@prometheus.service"
+        ]
+        ++ lib.optionals config.services.syncthing-container.enable [
+          "container@syncthing.service"
+        ];
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
@@ -69,29 +88,53 @@ in {
       };
     };
 
-    systemd.services.gitea-db-password.after = ["json-secrets.service"];
-    systemd.services.gitea-db-password.wants = ["json-secrets.service"];
-    systemd.services.miniflux-db-password.after = ["json-secrets.service"];
-    systemd.services.miniflux-db-password.wants = ["json-secrets.service"];
-    systemd.services.woodpecker-secret.after = ["json-secrets.service"];
-    systemd.services.woodpecker-secret.wants = ["json-secrets.service"];
-    systemd.services."container@gitea".after = ["json-secrets.service"];
-    systemd.services."container@gitea".wants = ["json-secrets.service"];
-    systemd.services."container@radicale".after = ["json-secrets.service"];
-    systemd.services."container@radicale".wants = ["json-secrets.service"];
-    systemd.services."container@miniflux".after = ["json-secrets.service"];
-    systemd.services."container@miniflux".wants = ["json-secrets.service"];
-    systemd.services."container@puregym".after = ["json-secrets.service"];
-    systemd.services."container@puregym".wants = ["json-secrets.service"];
-    systemd.services."container@robocop".after = ["json-secrets.service"];
-    systemd.services."container@robocop".wants = ["json-secrets.service"];
-    systemd.services."container@onatrain".after = ["json-secrets.service"];
-    systemd.services."container@onatrain".wants = ["json-secrets.service"];
-    systemd.services."container@grafana".after = ["json-secrets.service"];
-    systemd.services."container@grafana".wants = ["json-secrets.service"];
-    systemd.services."container@prometheus".after = ["json-secrets.service"];
-    systemd.services."container@prometheus".wants = ["json-secrets.service"];
-    systemd.services."container@syncthing".after = ["json-secrets.service"];
-    systemd.services."container@syncthing".wants = ["json-secrets.service"];
+    systemd.services.gitea-db-password = lib.mkIf config.services.gitea-container.enable {
+      after = ["json-secrets.service"];
+      wants = ["json-secrets.service"];
+    };
+    systemd.services.miniflux-db-password = lib.mkIf config.services.miniflux-container.enable {
+      after = ["json-secrets.service"];
+      wants = ["json-secrets.service"];
+    };
+    systemd.services.woodpecker-secret = lib.mkIf config.services.woodpecker-config.enable {
+      after = ["json-secrets.service"];
+      wants = ["json-secrets.service"];
+    };
+    systemd.services."container@gitea" = lib.mkIf config.services.gitea-container.enable {
+      after = ["json-secrets.service"];
+      wants = ["json-secrets.service"];
+    };
+    systemd.services."container@radicale" = lib.mkIf config.services.radicale-container.enable {
+      after = ["json-secrets.service"];
+      wants = ["json-secrets.service"];
+    };
+    systemd.services."container@miniflux" = lib.mkIf config.services.miniflux-container.enable {
+      after = ["json-secrets.service"];
+      wants = ["json-secrets.service"];
+    };
+    systemd.services."container@puregym" = lib.mkIf config.services.puregym-container.enable {
+      after = ["json-secrets.service"];
+      wants = ["json-secrets.service"];
+    };
+    systemd.services."container@robocop" = lib.mkIf config.services.robocop-container.enable {
+      after = ["json-secrets.service"];
+      wants = ["json-secrets.service"];
+    };
+    systemd.services."container@onatrain" = lib.mkIf config.services.onatrain-container.enable {
+      after = ["json-secrets.service"];
+      wants = ["json-secrets.service"];
+    };
+    systemd.services."container@grafana" = lib.mkIf config.services.grafana-container.enable {
+      after = ["json-secrets.service"];
+      wants = ["json-secrets.service"];
+    };
+    systemd.services."container@prometheus" = lib.mkIf config.services.prometheus-container.enable {
+      after = ["json-secrets.service"];
+      wants = ["json-secrets.service"];
+    };
+    systemd.services."container@syncthing" = lib.mkIf config.services.syncthing-container.enable {
+      after = ["json-secrets.service"];
+      wants = ["json-secrets.service"];
+    };
   };
 }
