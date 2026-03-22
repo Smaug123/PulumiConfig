@@ -73,6 +73,10 @@ in {
           hostPath = "/run/secrets/robocop_openai_api_key";
           isReadOnly = true;
         };
+        "/run/secrets/robocop_openai_webhook_secret" = {
+          hostPath = "/run/secrets/robocop_openai_webhook_secret";
+          isReadOnly = true;
+        };
         "/run/secrets/robocop_target_github_user_id" = {
           hostPath = "/run/secrets/robocop_target_github_user_id";
           isReadOnly = true;
@@ -134,6 +138,7 @@ in {
             GITHUB_PRIVATE_KEY_FILE = "/run/secrets/robocop_github_private_key";
             GITHUB_WEBHOOK_SECRET_FILE = "/run/secrets/robocop_github_webhook_secret";
             OPENAI_API_KEY_FILE = "/run/secrets/robocop_openai_api_key";
+            OPENAI_WEBHOOK_SECRET_FILE = "/run/secrets/robocop_openai_webhook_secret";
             TARGET_GITHUB_USER_ID_FILE = "/run/secrets/robocop_target_github_user_id";
             STATUS_AUTH_TOKEN_FILE = "/run/secrets/robocop_status_auth_token";
           };

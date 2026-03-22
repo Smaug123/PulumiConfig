@@ -48,11 +48,11 @@
     },
     "crane": {
       "locked": {
-        "lastModified": 1767461147,
-        "narHash": "sha256-TH/xTeq/RI+DOzo+c+4F431eVuBpYVwQwBxzURe7kcI=",
+        "lastModified": 1767744144,
+        "narHash": "sha256-9/9ntI0D+HbN4G0TrK3KmHbTvwgswz7p8IEJsWyef8Q=",
         "owner": "ipetkov",
         "repo": "crane",
-        "rev": "7d59256814085fd9666a2ae3e774dc5ee216b630",
+        "rev": "2fb033290bf6b23f226d4c8b32f7f7a16b043d7e",
         "type": "github"
       },
       "original": {
@@ -240,11 +240,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1766850854,
-        "narHash": "sha256-asWZx7X5FRrna8ntfE0+vTBUIPLth8R8bckbOpfT3Us=",
+        "lastModified": 1773597207,
+        "narHash": "sha256-ZHoQqj+prlvfMItkQ/xTZbPguEcRlNPyRzh2j/51z8E=",
         "owner": "nix-community",
         "repo": "home-manager",
-        "rev": "2d36a6de2fee5cd232b0a28137d95541c21eb7f0",
+        "rev": "585a161ea6d1ec78e0daee9f1b40f8539d53d4a3",
         "type": "github"
       },
       "original": {
@@ -313,11 +313,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1766651565,
-        "narHash": "sha256-QEhk0eXgyIqTpJ/ehZKg9IKS7EtlWxF3N7DXy42zPfU=",
+        "lastModified": 1773389992,
+        "narHash": "sha256-wvfdLLWJ2I9oEpDd9PfMA8osfIZicoQ5MT1jIwNs9Tk=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "3e2499d5539c16d0d173ba53552a4ff8547f4539",
+        "rev": "c06b4ae3d6599a672a6210b7021d699c351eebda",
         "type": "github"
       },
       "original": {
@@ -368,11 +368,11 @@
         "rust-overlay": "rust-overlay"
       },
       "locked": {
-        "lastModified": 1767727206,
-        "narHash": "sha256-7GVx2KUxNB9ljx98oNrU43t2UfuFPX8QKXpj9tMaIt8=",
+        "lastModified": 1769030652,
+        "narHash": "sha256-QFVdX8Tbkmhs73AQoVCm8mefOAopogOYeqv9o/UXSM4=",
         "owner": "Smaug123",
         "repo": "train-planner",
-        "rev": "2bf45a92180ac3c674a7db1f58e76464721b1e0f",
+        "rev": "e55c9194ea5348802f8762298f4cb27a29ebc36c",
         "type": "github"
       },
       "original": {
@@ -415,11 +415,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1767092819,
-        "narHash": "sha256-A2VpPln1SB/ZbgTdU+s9JANSP4c9ZSSGzobsHSNGVFA=",
+        "lastModified": 1773606903,
+        "narHash": "sha256-6Q2oFHsqbP3CjINlFMQ4ha54JcrqW/PeZ6xj5PMQNqY=",
         "ref": "refs/heads/main",
-        "rev": "63835ecfba1e4683368b7cd4ed5d55abfed982e1",
-        "revCount": 24,
+        "rev": "499fa0e51086a2cb1081f5512e5da809fcad77c2",
+        "revCount": 26,
         "type": "git",
         "url": "https://gitea.patrickstevens.co.uk/patrick/puregym-unofficial-dotnet"
       },
@@ -438,11 +438,11 @@
         "rust-overlay": "rust-overlay_2"
       },
       "locked": {
-        "lastModified": 1767554698,
-        "narHash": "sha256-e9ONv/mYR3mzj6ur9EnNs2lT6OZf2KoWG6NSFGg11JY=",
+        "lastModified": 1768507649,
+        "narHash": "sha256-ieyfglZTN9OWoCAOstuZLHgsKSFMBtfCQfXPLi4fFbo=",
         "owner": "Smaug123",
         "repo": "robocop",
-        "rev": "56ea1d620b33d5a89dae824c162c0ced1fac604e",
+        "rev": "3c49f530b0d99b5d2ea9592c661b838f6f9130f3",
         "type": "github"
       },
       "original": {
@@ -492,11 +492,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1766544144,
-        "narHash": "sha256-5ppfEyZqX6FMluZHty7Dvw4xN10vLq1yQosp7dGG/28=",
+        "lastModified": 1767926800,
+        "narHash": "sha256-x0n73J6ufD/EhDlVdcoAmF0OQHZ+b0a2cKDc8RZyt+o=",
         "owner": "oxalica",
         "repo": "rust-overlay",
-        "rev": "5359a4fdc3fa9baa2edcf49758d404dfeeca7743",
+        "rev": "499e9eed88ff9494b6604205b42847e847dfeb91",
         "type": "github"
       },
       "original": {
@@ -720,11 +720,11 @@
         "scripts": "scripts_4"
       },
       "locked": {
-        "lastModified": 1765619476,
-        "narHash": "sha256-ERgc9YHmBbe1N098oy7wl2ayt4Mn0deoVTbDtc9ozeU=",
+        "lastModified": 1772490459,
+        "narHash": "sha256-Wuo1nmSnpI6oP+aIL8Hk5AK+PFRIeJxta/RfKBXVlXg=",
         "owner": "Smaug123",
         "repo": "static-site-pipeline",
-        "rev": "a53b75f77b197c123267715708f36b1fcef67080",
+        "rev": "c5ab0ed5651cc47cd496c4e2fd9140010d5102dd",
         "type": "github"
       },
       "original": {
