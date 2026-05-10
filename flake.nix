@@ -1,7 +1,7 @@
 {
   description = "Web server flake";
   inputs = {
-    nixpkgs.url = "nixpkgs/nixos-unstable";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
   outputs = {
@@ -53,7 +53,7 @@
           };
         };
         devShells = let
-          requirements = [dotnet-sdk pkgs.git pkgs.alejandra pkgs.nodePackages.markdown-link-check pkgs.jq];
+          requirements = [dotnet-sdk pkgs.git pkgs.alejandra pkgs.lychee pkgs.jq];
         in {
           default = pkgs.mkShell {
             buildInputs =

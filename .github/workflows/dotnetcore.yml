@@ -81,7 +81,7 @@ jobs:
       - name: Enable Nix cache
         uses: DeterminateSystems/magic-nix-cache-action@b8276522d77f21bf19d3574e5bc99186a6c7aa6c
       - name: Run link checker
-        run: nix develop .#ci --command markdown-link-check README.md
+        run: nix develop .#ci --command lychee README.md
 
   all-required-checks-complete:
     needs: [check-dotnet-format, check-nix-format, build, shellcheck, linkcheck]
